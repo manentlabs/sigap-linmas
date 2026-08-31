@@ -1,36 +1,42 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-
-const sequelize = require("./config/database");
-const authRoutes = require("./routes/authRoutes");
-const agendaRoutes = require("./routes/agendaRoutes");
-const beritaRoutes = require("./routes/beritaRoutes");
-const kategoriBeritaRoutes = require("./routes/kategoriBeritaRoutes");
-const anggotaRoutes = require("./routes/anggotaRoutes");
-const kecamatanRoutes = require("./routes/kecamatanRoutes");
-const absensiRoutes = require("./routes/absensiRoutes");
-const laporanRoutes = require("./routes/laporanRoutes");
-const sebaranRoutes = require("./routes/sebaranRoutes");
-const aduanRoutes = require("./routes/aduanRoutes");
-const titikpklRoutes = require("./routes/titikpklRoutes");
-const monevRoutes = require("./routes/monevRoutes");
-const userRoutes = require("./routes/userRoutes");
 const path = require("path");
+
+// === SEMUA IMPORT DARI FOLDER BACKEND ===
+const sequelize = require("./backend/config/database");
+const authRoutes = require("./backend/routes/authRoutes");
+const agendaRoutes = require("./backend/routes/agendaRoutes");
+const beritaRoutes = require("./backend/routes/beritaRoutes");
+const kategoriBeritaRoutes = require("./backend/routes/kategoriBeritaRoutes");
+const anggotaRoutes = require("./backend/routes/anggotaRoutes");
+const kecamatanRoutes = require("./backend/routes/kecamatanRoutes");
+const absensiRoutes = require("./backend/routes/absensiRoutes");
+const laporanRoutes = require("./backend/routes/laporanRoutes");
+const sebaranRoutes = require("./backend/routes/sebaranRoutes");
+const aduanRoutes = require("./backend/routes/aduanRoutes");
+const titikpklRoutes = require("./backend/routes/titikpklRoutes");
+const monevRoutes = require("./backend/routes/monevRoutes");
+const userRoutes = require("./backend/routes/userRoutes");
+
 const app = express();
 
+// Middleware
 app.use(cors({
-  origin: "http://localhost:5173", // sesuaikan dengan origin frontend Anda
+  origin: process.env.CLIENT_URL || "http://localhost:5173",
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(
-  "/uploads",
-  express.static(path.join(__dirname, "public", "uploads"))
-);
+// 1. Sajikan file upload dari folder backend/public/uploads
+app.use("/uploads", express.static(path.join(__dirname, "backend", "public", "uploads")));
+
+// 2. Sajikan semua file statis frontend dari folder 'frontend'
+app.use(express.static(path.join(__dirname, "frontend")));
+
+// 3. Daftarkan semua route API
 app.use("/api/auth", authRoutes);
 app.use("/api/agenda", agendaRoutes);
 app.use("/api/berita", beritaRoutes);
@@ -45,17 +51,14 @@ app.use("/api/titikpkl", titikpklRoutes);
 app.use("/api/monev", monevRoutes);
 app.use("/api/user", userRoutes);
 
-// Contoh health check sederhana
+// Health check
 app.get("/api/health", (req, res) => {
   res.json({ success: true, message: "SIGAP Linmas API aktif." });
 });
 
-// Serve frontend static files
-app.use(express.static(path.join(__dirname, "public")));
-
-// Catch-all: kirim index.html untuk semua route selain /api/*
+// 4. Catch-all: semua request selain /api/* dikirim ke index.html (SPA)
 app.get(/^(?!\/api).*/, (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+  res.sendFile(path.join(__dirname, "frontend", "index.html"));
 });
 
 const PORT = process.env.PORT || 5000;
