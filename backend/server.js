@@ -50,6 +50,14 @@ app.get("/api/health", (req, res) => {
   res.json({ success: true, message: "SIGAP Linmas API aktif." });
 });
 
+// Serve frontend static files
+app.use(express.static(path.join(__dirname, "public")));
+
+// Catch-all: kirim index.html untuk semua route selain /api/*
+app.get(/^(?!\/api).*/, (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
 const PORT = process.env.PORT || 5000;
 
 async function start() {
