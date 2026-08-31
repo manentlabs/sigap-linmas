@@ -212,8 +212,15 @@ export default function AbsensiHistory() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  // Hanya role ini yang punya akses ke absensi pribadi (checkin/checkout)
+  // canAccessPersonal -> menentukan endpoint riwayat mana yang dipakai
+  // ("riwayat pribadi" vs "semua data"). Admin TIDAK termasuk di sini
+  // supaya admin tetap melihat data absensi semua anggota di tabel bawah.
   const canAccessPersonal = isNonP3K || isOperator;
+
+  // canDoAbsensi -> menentukan siapa yang boleh melakukan absen (checkin/checkout).
+  // Admin ditambahkan di sini supaya bisa mengecek/test fitur absen,
+  // tapi tabel riwayat tetap menampilkan "Semua Data Absensi".
+  const canDoAbsensi = isNonP3K || isOperator || isAdmin;
 
   // State untuk riwayat (digunakan untuk semua role)
   const [riwayat, setRiwayat] = useState([]);
@@ -224,7 +231,7 @@ export default function AbsensiHistory() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [total, setTotal] = useState(0);
 
-  // State untuk absensi hari ini (hanya untuk non_p3k & operator)
+  // State untuk absensi hari ini (untuk non_p3k, operator, & admin)
   const [absensiHariIni, setAbsensiHariIni] = useState(null);
   const [loadingStatus, setLoadingStatus] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -236,7 +243,7 @@ export default function AbsensiHistory() {
 
   const showToast = (msg, severity = "success") => setToast({ open: true, msg, severity });
 
-  // ====== Fetch status hari ini (hanya untuk yang punya akses) ======
+  // ====== Fetch status hari ini (untuk yang punya akses absen) ======
   const fetchStatusHariIni = useCallback(async () => {
     try {
       const res = await api.get("/absensi/today");
@@ -310,12 +317,12 @@ export default function AbsensiHistory() {
 
   // ====== Efek: load data ======
   useEffect(() => {
-    if (canAccessPersonal) {
+    if (canDoAbsensi) {
       fetchStatusHariIni();
     } else {
       setLoadingStatus(false);
     }
-  }, [canAccessPersonal, fetchStatusHariIni]);
+  }, [canDoAbsensi, fetchStatusHariIni]);
 
   useEffect(() => {
     fetchRiwayat();
@@ -325,7 +332,7 @@ export default function AbsensiHistory() {
     setPage(0);
   }, [filterStatus, filterBulan]);
 
-  // ====== Handler Absen (hanya untuk yang punya akses) ======
+  // ====== Handler Absen (untuk yang punya akses absen) ======
   const handleMasuk = async (file) => {
     setActionLoading(true);
     try {
@@ -445,7 +452,7 @@ export default function AbsensiHistory() {
   // ====== RENDER ======
   return (
     <Box sx={{ maxWidth: 1200, mx: "auto", p: 2 }}>
-      {/* CARD STATUS HARI INI (hanya untuk non_p3k & operator) */}
+      {/* CARD STATUS HARI INI (untuk non_p3k, operator, & admin) */}
       <Card sx={{ mb: 4, borderRadius: 1, boxShadow: "0 8px 30px rgba(0,0,0,0.04)", border: `1px solid ${C.border}` }}>
         <CardContent sx={{ textAlign: "center", py: 4, px: 4 }}>
           <Typography variant="h6" sx={{ fontWeight: 700, color: C.text, mb: 1 }}>
@@ -453,12 +460,12 @@ export default function AbsensiHistory() {
           </Typography>
           <Typography sx={{ color: C.textDim, mb: 3 }}>{todayStr}</Typography>
 
-          {!canAccessPersonal ? (
+          {!canDoAbsensi ? (
             <Box sx={{ py: 2 }}>
               <Typography sx={{ color: C.textDim, fontSize: 15 }}>
-                Anda tidak memiliki akses untuk melakukan absensi. 
-                {isAdmin || isKepalaSatgas
-                  ? " Sebagai admin/kepala satgas, Anda dapat melihat semua data absensi di bawah."
+                Anda tidak memiliki akses untuk melakukan absensi.
+                {isKepalaSatgas
+                  ? " Sebagai kepala satgas, Anda dapat melihat semua data absensi di bawah."
                   : ""}
               </Typography>
             </Box>

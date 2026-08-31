@@ -19,12 +19,23 @@ function verifyToken(req, res, next) {
   }
 }
 
-// Membatasi endpoint hanya untuk role tertentu, contoh: authorizeRoles('admin', 'kepala_satgas')
+// Membatasi endpoint hanya untuk role tertentu, contoh: authorizeRoles('kepala_satgas')
+// role 'admin' otomatis lolos tanpa perlu disebutkan di allowedRoles
 function authorizeRoles(...allowedRoles) {
   return (req, res, next) => {
-    if (!req.user || !allowedRoles.includes(req.user.role)) {
+    if (!req.user) {
       return res.status(403).json({ success: false, message: "Anda tidak memiliki akses untuk aksi ini." });
     }
+
+    // Admin selalu diizinkan mengakses semua endpoint
+    if (req.user.role === "admin") {
+      return next();
+    }
+
+    if (!allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({ success: false, message: "Anda tidak memiliki akses untuk aksi ini." });
+    }
+
     next();
   };
 }
