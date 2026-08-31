@@ -33,8 +33,8 @@ app.use(express.urlencoded({ extended: true }));
 // 1. Sajikan file upload dari folder backend/public/uploads
 app.use("/uploads", express.static(path.join(__dirname, "backend", "public", "uploads")));
 
-// 2. Sajikan semua file statis frontend dari folder 'frontend'
-app.use(express.static(path.join(__dirname, "frontend")));
+// 2. Sajikan file statis frontend dari hasil build (frontend/dist)
+app.use(express.static(path.join(__dirname, "frontend", "dist")));
 
 // 3. Daftarkan semua route API
 app.use("/api/auth", authRoutes);
@@ -56,9 +56,9 @@ app.get("/api/health", (req, res) => {
   res.json({ success: true, message: "SIGAP Linmas API aktif." });
 });
 
-// 4. Catch-all: semua request selain /api/* dikirim ke index.html (SPA)
+// 4. Catch-all: arahkan ke index.html di folder dist
 app.get(/^(?!\/api).*/, (req, res) => {
-  res.sendFile(path.join(__dirname, "frontend", "index.html"));
+  res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"));
 });
 
 const PORT = process.env.PORT || 5000;
