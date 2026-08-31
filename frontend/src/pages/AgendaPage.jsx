@@ -1,3 +1,5 @@
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
@@ -59,6 +61,8 @@ export default function AgendaPage() {
   const [filterStatus, setFilterStatus] = useState("Semua");
   const [filterTanggal, setFilterTanggal] = useState(new Date().toISOString().split("T")[0]); // default hari ini
   const [tampilkanSemua, setTampilkanSemua] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   // Form
   const [openModal, setOpenModal] = useState(false);
@@ -280,7 +284,7 @@ export default function AgendaPage() {
         </Grid>
       </Card>
 
-      {/* Tabel */}
+      {/* Tabel / Kartu */}
       <Card sx={{ bgcolor: C.panel, border: `1px solid ${C.border}`, borderRadius: "14px", overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }} elevation={0}>
         {loading ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}><CircularProgress sx={{ color: C.amber }} /></Box>
@@ -290,10 +294,83 @@ export default function AgendaPage() {
           <Box sx={{ py: 6, textAlign: "center", color: C.textDim }}>
             {tampilkanSemua ? "Belum ada agenda" : "Tidak ada kegiatan hari ini"}
           </Box>
+        ) : isMobile ? (
+          <>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.2, p: 1.5 }}>
+              {data.map((item) => (
+                <Box
+                  key={item.id}
+                  sx={{
+                    border: `1px solid ${C.border}`,
+                    borderRadius: "12px",
+                    p: 1.6,
+                    bgcolor: C.panel2,
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 1 }}>
+                    <Typography sx={{ fontSize: 14.5, fontWeight: 700, color: C.text, lineHeight: 1.3 }}>
+                      {item.judul}
+                    </Typography>
+                    <Chip
+                      label={item.status}
+                      size="small"
+                      sx={{
+                        bgcolor: `${getStatusColor(item.status)}20`,
+                        color: getStatusColor(item.status),
+                        fontWeight: 500,
+                        fontSize: 10.5,
+                        height: 20,
+                        flexShrink: 0,
+                      }}
+                    />
+                  </Box>
+
+                  <Typography sx={{ fontSize: 12.5, color: C.textDim, mt: 0.6 }}>
+                    {new Date(item.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
+                    {item.waktu_mulai && (
+                      <>
+                        {" • "}
+                        {item.waktu_mulai.substring(0, 5)}
+                        {item.waktu_selesai ? ` - ${item.waktu_selesai.substring(0, 5)}` : ""}
+                      </>
+                    )}
+                  </Typography>
+
+                  {item.lokasi && (
+                    <Typography sx={{ fontSize: 12.5, color: C.textFaint, mt: 0.3 }}>
+                      {item.lokasi}
+                    </Typography>
+                  )}
+
+                  <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 0.5, mt: 1 }}>
+                    <IconButton size="small" onClick={() => handleOpenDetail(item)}>
+                      <FiEye size={16} color={C.indigo} />
+                    </IconButton>
+                    <IconButton size="small" onClick={() => handleOpenEdit(item)}>
+                      <FiEdit2 size={16} color={C.amber} />
+                    </IconButton>
+                    <IconButton size="small" onClick={() => handleDelete(item.id)}>
+                      <FiTrash2 size={16} color={C.red} />
+                    </IconButton>
+                  </Box>
+                </Box>
+              ))}
+            </Box>
+            <TablePagination
+              component="div"
+              count={total}
+              page={page}
+              onPageChange={(e, newPage) => setPage(newPage)}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
+              labelRowsPerPage="Baris:"
+              sx={{ color: C.textDim }}
+            />
+          </>
         ) : (
           <>
-            <TableContainer>
-              <Table>
+            <TableContainer sx={{ overflowX: "auto" }}>
+              <Table sx={{ minWidth: 700 }}>
                 <TableHead sx={{ bgcolor: C.panel2 }}>
                   <TableRow>
                     <TableCell sx={{ color: C.text, fontWeight: 600, fontSize: 14 }}>Judul</TableCell>

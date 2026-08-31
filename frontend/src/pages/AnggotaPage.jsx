@@ -1,4 +1,6 @@
 // frontend/src/pages/anggota/AnggotaPage.jsx
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import Swal from "sweetalert2";
 import {
@@ -647,13 +649,120 @@ export default function AnggotaPage() {
 // Sub-komponen: Tabel anggota
 // ===========================================================================
 function TabelAnggota({ list, kecamatanNama, onView, onEdit, onDelete }) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  if (list.length === 0) {
+    return (
+      <Box sx={{ bgcolor: "#FFFFFF", border: `1px solid ${C.border}`, borderRadius: "14px 14px 0 0", py: 6, textAlign: "center", color: C.textFaint, fontSize: 13.5 }}>
+        Tidak ada anggota yang sesuai dengan filter.
+      </Box>
+    );
+  }
+
+  // ---------- Tampilan kartu (mobile) ----------
+  if (isMobile) {
+    return (
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 1.2 }}>
+        {list.map((a) => (
+          <Box
+            key={a.id}
+            sx={{
+              bgcolor: "#FFFFFF",
+              border: `1px solid ${C.border}`,
+              borderRadius: "14px",
+              p: 1.6,
+              display: "flex",
+              gap: 1.4,
+            }}
+          >
+            <Avatar
+              src={a.foto_url ? `${FILE_BASE_URL}${a.foto_url}` : undefined}
+              sx={{ width: 52, height: 52, bgcolor: C.amberBg, flexShrink: 0 }}
+            >
+              <FiUser size={18} color={C.amber} />
+            </Avatar>
+
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 1 }}>
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography sx={{ fontSize: 14, fontWeight: 700, color: C.text, lineHeight: 1.3 }}>
+                    {a.nama}
+                  </Typography>
+                  <Typography sx={{ fontSize: 11.5, color: C.textFaint, fontFamily: "monospace" }}>
+                    {a.kode_anggota} • {a.nik}
+                  </Typography>
+                </Box>
+                <Box sx={{ display: "flex", flexShrink: 0 }}>
+                  <IconButton size="small" onClick={() => onView(a)} sx={{ color: C.slate, p: 0.6 }}>
+                    <FiEye size={14} />
+                  </IconButton>
+                  <IconButton size="small" onClick={() => onEdit(a)} sx={{ color: C.indigo, p: 0.6 }}>
+                    <FiEdit2 size={14} />
+                  </IconButton>
+                  <IconButton size="small" onClick={() => onDelete(a)} sx={{ color: C.red, p: 0.6 }}>
+                    <FiTrash2 size={14} />
+                  </IconButton>
+                </Box>
+              </Box>
+
+              <Typography sx={{ fontSize: 12.5, color: C.textDim, mt: 0.6 }}>
+                {a.kecamatan_nama || kecamatanNama[a.kecamatan_id] || "-"}
+              </Typography>
+
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1, flexWrap: "wrap" }}>
+                <Chip
+                  label={a.status}
+                  size="small"
+                  sx={{
+                    bgcolor: a.status === "Aktif" ? C.tealBg : C.redBg,
+                    color: a.status === "Aktif" ? C.teal : C.red,
+                    fontWeight: 600,
+                    fontSize: 10.5,
+                    height: 20,
+                  }}
+                />
+                <Chip
+                  label={a.bpjs_status}
+                  size="small"
+                  sx={{
+                    bgcolor: bpjsChipColor(a.bpjs_status).bg,
+                    color: bpjsChipColor(a.bpjs_status).color,
+                    fontWeight: 600,
+                    fontSize: 10.5,
+                    height: 20,
+                  }}
+                />
+                <Typography sx={{ fontSize: 11, color: C.textFaint, fontFamily: "monospace", ml: "auto" }}>
+                  {formatTanggal(a.tanggal_bergabung)}
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+        ))}
+      </Box>
+    );
+  }
+
+  // ---------- Tampilan tabel (desktop/tablet) ----------
   return (
-    <Box sx={{ bgcolor: "#FFFFFF", border: `1px solid ${C.border}`, borderRadius: "14px 14px 0 0", overflow: "hidden" }}>
-      <Table>
+    <Box sx={{ bgcolor: "#FFFFFF", border: `1px solid ${C.border}`, borderRadius: "14px 14px 0 0", overflowX: "auto" }}>
+      <Table sx={{ minWidth: 900 }}>
         <TableHead>
           <TableRow>
             {["Foto", "Kode", "Nama", "Kecamatan", "Bergabung", "Status", "BPJS", "Aksi"].map((h) => (
-              <TableCell key={h} sx={{ fontSize: 11, fontWeight: 700, color: C.textFaint, textTransform: "uppercase", letterSpacing: 0.5, borderBottom: `1px solid ${C.border}` }}>
+              <TableCell
+                key={h}
+                sx={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: C.textFaint,
+                  textTransform: "uppercase",
+                  letterSpacing: 0.5,
+                  borderBottom: `1px solid ${C.border}`,
+                  whiteSpace: "nowrap",
+                }}
+              >
                 {h}
               </TableCell>
             ))}
@@ -722,11 +831,6 @@ function TabelAnggota({ list, kecamatanNama, onView, onEdit, onDelete }) {
           ))}
         </TableBody>
       </Table>
-      {list.length === 0 && (
-        <Box sx={{ py: 6, textAlign: "center", color: C.textFaint, fontSize: 13.5 }}>
-          Tidak ada anggota yang sesuai dengan filter.
-        </Box>
-      )}
     </Box>
   );
 }

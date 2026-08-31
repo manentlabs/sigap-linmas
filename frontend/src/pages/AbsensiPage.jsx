@@ -1,3 +1,5 @@
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import {
   Box,
@@ -207,6 +209,8 @@ export default function AbsensiHistory() {
   const isKepalaSatgas = role === "kepala_satgas";
   const isOperator = role === "operator_kecamatan";
   const isNonP3K = role === "non_p3k";
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   // Hanya role ini yang punya akses ke absensi pribadi (checkin/checkout)
   const canAccessPersonal = isNonP3K || isOperator;
@@ -618,14 +622,124 @@ export default function AbsensiHistory() {
         <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
           <CircularProgress size={28} sx={{ color: C.amber }} />
         </Box>
+      ) : isMobile ? (
+        <>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.2 }}>
+            {expandedData.length > 0 ? (
+              expandedData.map((row) => (
+                <Box
+                  key={row.key}
+                  sx={{
+                    bgcolor: "white",
+                    border: `1px solid ${C.border}`,
+                    borderRadius: "12px",
+                    p: 1.6,
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 1 }}>
+                    <Box>
+                      <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: C.text }}>
+                        {row.anggota}
+                      </Typography>
+                      <Typography sx={{ fontSize: 11.5, color: C.textFaint, fontFamily: "monospace" }}>
+                        {formatTanggal(row.tanggal)}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: "flex", gap: 0.6, flexShrink: 0 }}>
+                      <Chip
+                        label={row.jenis}
+                        size="small"
+                        sx={{
+                          bgcolor: row.jenis === "Masuk" ? C.tealBg : C.amberBg,
+                          color: row.jenis === "Masuk" ? C.teal : C.amber,
+                          fontWeight: 600,
+                          fontSize: 10.5,
+                          height: 20,
+                        }}
+                      />
+                      <Chip
+                        label={row.status}
+                        size="small"
+                        sx={{
+                          bgcolor: statusColor(row.status).bg,
+                          color: statusColor(row.status).color,
+                          fontWeight: 600,
+                          fontSize: 10.5,
+                          height: 20,
+                        }}
+                      />
+                    </Box>
+                  </Box>
+
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mt: 1.2, flexWrap: "wrap" }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                      <FiClock size={13} color={C.textDim} />
+                      <Typography sx={{ fontSize: 12.5, color: C.textDim, fontFamily: "monospace" }}>
+                        {formatJam(row.waktu)}
+                      </Typography>
+                    </Box>
+
+                    {parseKoordinat(row.lokasi) && (
+                      <Button
+                        size="small"
+                        startIcon={<FiMapPin size={13} />}
+                        onClick={() => openMap(row.lokasi, `${row.jenis} - ${formatTanggal(row.tanggal)}`)}
+                        sx={{ textTransform: "none", fontSize: 12, color: C.indigo, p: 0, minWidth: "auto" }}
+                      >
+                        Peta
+                      </Button>
+                    )}
+
+                    {row.foto && (
+                      <Box
+                        component="img"
+                        src={`${FILE_BASE_URL}${row.foto}`}
+                        onClick={() => openPhoto(row.foto, `Foto ${row.jenis} - ${formatTanggal(row.tanggal)}`)}
+                        sx={{
+                          width: 32,
+                          height: 32,
+                          objectFit: "cover",
+                          borderRadius: "8px",
+                          border: `1px solid ${C.border}`,
+                          cursor: "pointer",
+                          ml: "auto",
+                        }}
+                      />
+                    )}
+                  </Box>
+                </Box>
+              ))
+            ) : (
+              <Box sx={{ bgcolor: "white", border: `1px solid ${C.border}`, borderRadius: "14px", textAlign: "center", py: 4, color: C.textFaint, fontSize: 13.5 }}>
+                Belum ada data absensi.
+              </Box>
+            )}
+          </Box>
+          <Box sx={{ bgcolor: "white", border: `1px solid ${C.border}`, borderTop: "none", borderRadius: "0 0 14px 14px", mt: 1.2 }}>
+            <TablePagination
+              component="div"
+              count={total}
+              page={page}
+              onPageChange={(_, newPage) => setPage(newPage)}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={(e) => {
+                setRowsPerPage(parseInt(e.target.value, 10));
+                setPage(0);
+              }}
+              rowsPerPageOptions={[5, 10, 25]}
+              labelRowsPerPage="Baris"
+              labelDisplayedRows={({ from, to, count }) => `${from}–${to} dari ${count}`}
+            />
+          </Box>
+        </>
       ) : (
         <>
-          <Box sx={{ bgcolor: "white", border: `1px solid ${C.border}`, borderRadius: "14px 14px 0 0", overflow: "hidden" }}>
-            <Table size="small">
+          <Box sx={{ bgcolor: "white", border: `1px solid ${C.border}`, borderRadius: "14px 14px 0 0", overflowX: "auto" }}>
+            <Table size="small" sx={{ minWidth: 850 }}>
               <TableHead>
                 <TableRow>
                   {["Tanggal", "Anggota", "Jenis", "Waktu", "Lokasi", "Foto", "Status"].map((h) => (
-                    <TableCell key={h} sx={{ fontWeight: 700, fontSize: 11, color: C.textFaint, textTransform: "uppercase", borderBottom: `1px solid ${C.border}` }}>
+                    <TableCell key={h} sx={{ fontWeight: 700, fontSize: 11, color: C.textFaint, textTransform: "uppercase", borderBottom: `1px solid ${C.border}`, whiteSpace: "nowrap" }}>
                       {h}
                     </TableCell>
                   ))}

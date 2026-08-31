@@ -1,3 +1,5 @@
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
@@ -65,6 +67,8 @@ export default function AduanPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("Semua");
   const [kategoriFilter, setKategoriFilter] = useState("");
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   // Data dropdown
   const [kategoriList, setKategoriList] = useState([]);
@@ -386,7 +390,7 @@ export default function AduanPage() {
   </Box>
 </Card>
 
-      {/* Tabel */}
+      {/* Tabel / Kartu */}
       <Card sx={{ bgcolor: C.panel, border: `1px solid ${C.border}`, borderRadius: "14px", overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }} elevation={0}>
         {loading ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
@@ -396,10 +400,88 @@ export default function AduanPage() {
           <Alert severity="error" sx={{ m: 2 }}>{error}</Alert>
         ) : aduans.length === 0 ? (
           <Box sx={{ py: 6, textAlign: "center", color: C.textDim }}>Belum ada data aduan</Box>
+        ) : isMobile ? (
+          <>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.2, p: 1.5 }}>
+              {aduans.map((aduan) => (
+                <Box
+                  key={aduan.id}
+                  sx={{ border: `1px solid ${C.border}`, borderRadius: "12px", p: 1.6, bgcolor: C.panel2 }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 1 }}>
+                    <Typography sx={{ fontSize: 14, fontWeight: 700, color: C.text }}>
+                      {aduan.kode_aduan}
+                    </Typography>
+                    <Chip
+                      label={aduan.status}
+                      size="small"
+                      sx={{
+                        bgcolor: `${getStatusColor(aduan.status)}20`,
+                        color: getStatusColor(aduan.status),
+                        fontWeight: 500,
+                        fontSize: 10.5,
+                        height: 20,
+                        flexShrink: 0,
+                      }}
+                    />
+                  </Box>
+
+                  <Typography
+                    sx={{
+                      fontSize: 12.5,
+                      color: C.textDim,
+                      mt: 0.6,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                    }}
+                  >
+                    {aduan.isi}
+                  </Typography>
+
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1, flexWrap: "wrap" }}>
+                    <Chip
+                      label={getKategoriName(aduan.kategori_id)}
+                      size="small"
+                      variant="outlined"
+                      sx={{ fontSize: 10.5, height: 20, borderColor: C.border, color: C.textDim }}
+                    />
+                    <Typography sx={{ fontSize: 11, color: C.textFaint, ml: "auto" }}>
+                      {aduan.tanggal ? new Date(aduan.tanggal).toLocaleDateString("id-ID") : "-"}
+                    </Typography>
+                  </Box>
+
+                  <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 0.3, mt: 1 }}>
+                    <IconButton size="small" onClick={() => handleOpenDetail(aduan)} sx={{ p: 0.6 }}>
+                      <FiEye size={15} color={C.indigo} />
+                    </IconButton>
+                    <IconButton size="small" onClick={() => handleOpenEdit(aduan)} sx={{ p: 0.6 }}>
+                      <FiEdit2 size={15} color={C.amber} />
+                    </IconButton>
+                    <IconButton size="small" onClick={() => handleDelete(aduan.id)} sx={{ p: 0.6 }}>
+                      <FiTrash2 size={15} color={C.red} />
+                    </IconButton>
+                  </Box>
+                </Box>
+              ))}
+            </Box>
+            <TablePagination
+              component="div"
+              count={total}
+              page={page}
+              onPageChange={(e, newPage) => setPage(newPage)}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
+              labelRowsPerPage="Baris:"
+              sx={{ color: C.textDim }}
+            />
+          </>
         ) : (
           <>
-            <TableContainer>
-              <Table>
+            <TableContainer sx={{ overflowX: "auto" }}>
+              <Table sx={{ minWidth: 750 }}>
                 <TableHead sx={{ bgcolor: C.panel2 }}>
                   <TableRow>
                     <TableCell sx={{ color: C.text, fontWeight: 600, fontSize: 14 }}>Kode</TableCell>

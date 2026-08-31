@@ -1,4 +1,6 @@
 // frontend/src/pages/laporan/LaporanPage.jsx
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
@@ -124,6 +126,8 @@ function LaporanNonP3K() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const [total, setTotal] = useState(0);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   // Filter
   const [filterKecamatan, setFilterKecamatan] = useState("Semua");
@@ -510,62 +514,124 @@ function LaporanNonP3K() {
         </Box>
       ) : (
         <>
-          <Box sx={{ bgcolor: "#FFFFFF", border: `1px solid ${C.border}`, borderRadius: "14px 14px 0 0", overflow: "hidden" }}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  {["Kode", "Tanggal", "Kecamatan", "Petugas", "Perihal", "Status", "Aksi"].map(h => (
-                    <TableCell key={h} sx={{ fontSize: 11, fontWeight: 700, color: C.textFaint, textTransform: "uppercase", letterSpacing: 0.5, borderBottom: `1px solid ${C.border}` }}>
-                      {h}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              </TableHead>
-              <TableBody>
+          {isMobile ? (
+            <>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1.2 }}>
                 {list.map(item => (
-                  <TableRow key={item.id} hover>
-                    <TableCell sx={{ borderBottom: `1px solid ${C.border}`, fontSize: 13, fontFamily: "monospace" }}>{item.kode_laporan}</TableCell>
-                    <TableCell sx={{ borderBottom: `1px solid ${C.border}`, fontSize: 13, fontFamily: "monospace" }}>{formatTanggal(item.tanggal)}</TableCell>
-                    <TableCell sx={{ borderBottom: `1px solid ${C.border}`, fontSize: 13 }}>{item.kecamatan_nama}</TableCell>
-                    <TableCell sx={{ borderBottom: `1px solid ${C.border}`, fontSize: 13 }}>{item.petugas_nama}</TableCell>
-                    <TableCell sx={{ borderBottom: `1px solid ${C.border}`, maxWidth: 220, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontSize: 13 }}>
-                      {item.perihal || "-"}
-                    </TableCell>
-                    <TableCell sx={{ borderBottom: `1px solid ${C.border}` }}>
+                  <Box
+                    key={item.id}
+                    sx={{ bgcolor: "#FFFFFF", border: `1px solid ${C.border}`, borderRadius: "14px", p: 1.6 }}
+                  >
+                    <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 1 }}>
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: C.text, lineHeight: 1.3 }}>
+                          {item.perihal || "-"}
+                        </Typography>
+                        <Typography sx={{ fontSize: 11.5, color: C.textFaint, fontFamily: "monospace" }}>
+                          {item.kode_laporan}
+                        </Typography>
+                      </Box>
                       <Chip label={item.status} size="small" sx={{
                         bgcolor: item.status === "Selesai" ? C.tealBg : C.amberBg,
                         color: item.status === "Selesai" ? C.teal : C.amber,
-                        fontWeight: 600, fontSize: 11.5,
+                        fontWeight: 600, fontSize: 10.5, height: 20, flexShrink: 0,
                       }} />
-                    </TableCell>
-                    <TableCell sx={{ borderBottom: `1px solid ${C.border}` }}>
-                      <IconButton size="small" onClick={() => openDetail(item)} sx={{ color: C.slate, mr: 0.5 }}><FiEye size={15} /></IconButton>
-                      <IconButton size="small" onClick={() => openEdit(item)} sx={{ color: C.indigo, mr: 0.5 }}><FiEdit2 size={15} /></IconButton>
-                      <IconButton size="small" onClick={() => handleDelete(item)} sx={{ color: C.red }}><FiTrash2 size={15} /></IconButton>
-                    </TableCell>
-                  </TableRow>
+                    </Box>
+
+                    <Typography sx={{ fontSize: 12.5, color: C.textDim, mt: 0.8 }}>
+                      {item.kecamatan_nama} · {item.petugas_nama}
+                    </Typography>
+                    <Typography sx={{ fontSize: 11.5, color: C.textFaint, fontFamily: "monospace", mt: 0.3 }}>
+                      {formatTanggal(item.tanggal)}
+                    </Typography>
+
+                    <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 0.3, mt: 1 }}>
+                      <IconButton size="small" onClick={() => openDetail(item)} sx={{ color: C.slate, p: 0.6 }}><FiEye size={14} /></IconButton>
+                      <IconButton size="small" onClick={() => openEdit(item)} sx={{ color: C.indigo, p: 0.6 }}><FiEdit2 size={14} /></IconButton>
+                      <IconButton size="small" onClick={() => handleDelete(item)} sx={{ color: C.red, p: 0.6 }}><FiTrash2 size={14} /></IconButton>
+                    </Box>
+                  </Box>
                 ))}
-              </TableBody>
-            </Table>
-            {list.length === 0 && (
-              <Box sx={{ py: 6, textAlign: "center", color: C.textFaint, fontSize: 13.5 }}>
-                Belum ada laporan Non‑P3K.
+                {list.length === 0 && (
+                  <Box sx={{ bgcolor: "#FFFFFF", border: `1px solid ${C.border}`, borderRadius: "14px", py: 6, textAlign: "center", color: C.textFaint, fontSize: 13.5 }}>
+                    Belum ada laporan Non‑P3K.
+                  </Box>
+                )}
               </Box>
-            )}
-          </Box>
-          <Box sx={{ bgcolor: "#FFFFFF", border: `1px solid ${C.border}`, borderTop: "none", borderRadius: "0 0 14px 14px" }}>
-            <TablePagination
-              component="div"
-              count={total}
-              page={page}
-              onPageChange={handleChangePage}
-              rowsPerPage={rowsPerPage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-              rowsPerPageOptions={[10, 25, 50, 100]}
-              labelRowsPerPage="Baris per halaman"
-              labelDisplayedRows={({ from, to, count }) => `${from}–${to} dari ${count}`}
-            />
-          </Box>
+              <Box sx={{ bgcolor: "#FFFFFF", border: `1px solid ${C.border}`, borderTop: "none", borderRadius: "0 0 14px 14px", mt: 1.2 }}>
+                <TablePagination
+                  component="div"
+                  count={total}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  rowsPerPage={rowsPerPage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                  rowsPerPageOptions={[10, 25, 50, 100]}
+                  labelRowsPerPage="Baris"
+                  labelDisplayedRows={({ from, to, count }) => `${from}–${to} dari ${count}`}
+                />
+              </Box>
+            </>
+          ) : (
+            <>
+              <Box sx={{ bgcolor: "#FFFFFF", border: `1px solid ${C.border}`, borderRadius: "14px 14px 0 0", overflowX: "auto" }}>
+                <Table sx={{ minWidth: 900 }}>
+                  <TableHead>
+                    <TableRow>
+                      {["Kode", "Tanggal", "Kecamatan", "Petugas", "Perihal", "Status", "Aksi"].map(h => (
+                        <TableCell key={h} sx={{ fontSize: 11, fontWeight: 700, color: C.textFaint, textTransform: "uppercase", letterSpacing: 0.5, borderBottom: `1px solid ${C.border}`, whiteSpace: "nowrap" }}>
+                          {h}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {list.map(item => (
+                      <TableRow key={item.id} hover>
+                        <TableCell sx={{ borderBottom: `1px solid ${C.border}`, fontSize: 13, fontFamily: "monospace" }}>{item.kode_laporan}</TableCell>
+                        <TableCell sx={{ borderBottom: `1px solid ${C.border}`, fontSize: 13, fontFamily: "monospace" }}>{formatTanggal(item.tanggal)}</TableCell>
+                        <TableCell sx={{ borderBottom: `1px solid ${C.border}`, fontSize: 13 }}>{item.kecamatan_nama}</TableCell>
+                        <TableCell sx={{ borderBottom: `1px solid ${C.border}`, fontSize: 13 }}>{item.petugas_nama}</TableCell>
+                        <TableCell sx={{ borderBottom: `1px solid ${C.border}`, maxWidth: 220, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontSize: 13 }}>
+                          {item.perihal || "-"}
+                        </TableCell>
+                        <TableCell sx={{ borderBottom: `1px solid ${C.border}` }}>
+                          <Chip label={item.status} size="small" sx={{
+                            bgcolor: item.status === "Selesai" ? C.tealBg : C.amberBg,
+                            color: item.status === "Selesai" ? C.teal : C.amber,
+                            fontWeight: 600, fontSize: 11.5,
+                          }} />
+                        </TableCell>
+                        <TableCell sx={{ borderBottom: `1px solid ${C.border}` }}>
+                          <IconButton size="small" onClick={() => openDetail(item)} sx={{ color: C.slate, mr: 0.5 }}><FiEye size={15} /></IconButton>
+                          <IconButton size="small" onClick={() => openEdit(item)} sx={{ color: C.indigo, mr: 0.5 }}><FiEdit2 size={15} /></IconButton>
+                          <IconButton size="small" onClick={() => handleDelete(item)} sx={{ color: C.red }}><FiTrash2 size={15} /></IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                {list.length === 0 && (
+                  <Box sx={{ py: 6, textAlign: "center", color: C.textFaint, fontSize: 13.5 }}>
+                    Belum ada laporan Non‑P3K.
+                  </Box>
+                )}
+              </Box>
+              <Box sx={{ bgcolor: "#FFFFFF", border: `1px solid ${C.border}`, borderTop: "none", borderRadius: "0 0 14px 14px" }}>
+                <TablePagination
+                  component="div"
+                  count={total}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  rowsPerPage={rowsPerPage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                  rowsPerPageOptions={[10, 25, 50, 100]}
+                  labelRowsPerPage="Baris per halaman"
+                  labelDisplayedRows={({ from, to, count }) => `${from}–${to} dari ${count}`}
+                />
+              </Box>
+            </>
+          )}
         </>
       )}
 
@@ -679,6 +745,8 @@ function LaporanBulanan() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const [total, setTotal] = useState(0);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   // Filter
   const [filterKecamatan, setFilterKecamatan] = useState("Semua");
@@ -1046,59 +1114,121 @@ function LaporanBulanan() {
         </Box>
       ) : (
         <>
-          <Box sx={{ bgcolor: "#FFFFFF", border: `1px solid ${C.border}`, borderRadius: "14px 14px 0 0", overflow: "hidden" }}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  {["Kode", "Kecamatan", "Bulan/Tahun", "Jenis Operasi", "Status", "Aksi"].map(h => (
-                    <TableCell key={h} sx={{ fontSize: 11, fontWeight: 700, color: C.textFaint, textTransform: "uppercase", letterSpacing: 0.5, borderBottom: `1px solid ${C.border}` }}>
-                      {h}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              </TableHead>
-              <TableBody>
+          {isMobile ? (
+            <>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1.2 }}>
                 {list.map(item => (
-                  <TableRow key={item.id} hover>
-                    <TableCell sx={{ borderBottom: `1px solid ${C.border}`, fontSize: 13, fontFamily: "monospace" }}>{item.kode_laporan}</TableCell>
-                    <TableCell sx={{ borderBottom: `1px solid ${C.border}`, fontSize: 13 }}>{item.kecamatan_nama}</TableCell>
-                    <TableCell sx={{ borderBottom: `1px solid ${C.border}`, fontSize: 13 }}>{BULAN_NAMA[item.bulan]} {item.tahun}</TableCell>
-                    <TableCell sx={{ borderBottom: `1px solid ${C.border}`, fontSize: 13 }}>{item.jenis_operasi}</TableCell>
-                    <TableCell sx={{ borderBottom: `1px solid ${C.border}` }}>
+                  <Box
+                    key={item.id}
+                    sx={{ bgcolor: "#FFFFFF", border: `1px solid ${C.border}`, borderRadius: "14px", p: 1.6 }}
+                  >
+                    <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 1 }}>
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: C.text, lineHeight: 1.3 }}>
+                          {item.jenis_operasi}
+                        </Typography>
+                        <Typography sx={{ fontSize: 11.5, color: C.textFaint, fontFamily: "monospace" }}>
+                          {item.kode_laporan}
+                        </Typography>
+                      </Box>
                       <Chip label={item.status} size="small" sx={{
                         bgcolor: item.status === "Selesai" ? C.tealBg : C.amberBg,
                         color: item.status === "Selesai" ? C.teal : C.amber,
-                        fontWeight: 600, fontSize: 11.5,
+                        fontWeight: 600, fontSize: 10.5, height: 20, flexShrink: 0,
                       }} />
-                    </TableCell>
-                    <TableCell sx={{ borderBottom: `1px solid ${C.border}` }}>
-                      <IconButton size="small" onClick={() => openDetail(item)} sx={{ color: C.slate, mr: 0.5 }}><FiEye size={15} /></IconButton>
-                      <IconButton size="small" onClick={() => openEdit(item)} sx={{ color: C.indigo, mr: 0.5 }}><FiEdit2 size={15} /></IconButton>
-                      <IconButton size="small" onClick={() => handleDelete(item)} sx={{ color: C.red }}><FiTrash2 size={15} /></IconButton>
-                    </TableCell>
-                  </TableRow>
+                    </Box>
+
+                    <Typography sx={{ fontSize: 12.5, color: C.textDim, mt: 0.8 }}>
+                      {item.kecamatan_nama}
+                    </Typography>
+                    <Typography sx={{ fontSize: 11.5, color: C.textFaint, mt: 0.3 }}>
+                      {BULAN_NAMA[item.bulan]} {item.tahun}
+                    </Typography>
+
+                    <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 0.3, mt: 1 }}>
+                      <IconButton size="small" onClick={() => openDetail(item)} sx={{ color: C.slate, p: 0.6 }}><FiEye size={14} /></IconButton>
+                      <IconButton size="small" onClick={() => openEdit(item)} sx={{ color: C.indigo, p: 0.6 }}><FiEdit2 size={14} /></IconButton>
+                      <IconButton size="small" onClick={() => handleDelete(item)} sx={{ color: C.red, p: 0.6 }}><FiTrash2 size={14} /></IconButton>
+                    </Box>
+                  </Box>
                 ))}
-              </TableBody>
-            </Table>
-            {list.length === 0 && (
-              <Box sx={{ py: 6, textAlign: "center", color: C.textFaint, fontSize: 13.5 }}>
-                Belum ada laporan bulanan.
+                {list.length === 0 && (
+                  <Box sx={{ bgcolor: "#FFFFFF", border: `1px solid ${C.border}`, borderRadius: "14px", py: 6, textAlign: "center", color: C.textFaint, fontSize: 13.5 }}>
+                    Belum ada laporan bulanan.
+                  </Box>
+                )}
               </Box>
-            )}
-          </Box>
-          <Box sx={{ bgcolor: "#FFFFFF", border: `1px solid ${C.border}`, borderTop: "none", borderRadius: "0 0 14px 14px" }}>
-            <TablePagination
-              component="div"
-              count={total}
-              page={page}
-              onPageChange={handleChangePage}
-              rowsPerPage={rowsPerPage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-              rowsPerPageOptions={[10, 25, 50, 100]}
-              labelRowsPerPage="Baris per halaman"
-              labelDisplayedRows={({ from, to, count }) => `${from}–${to} dari ${count}`}
-            />
-          </Box>
+              <Box sx={{ bgcolor: "#FFFFFF", border: `1px solid ${C.border}`, borderTop: "none", borderRadius: "0 0 14px 14px", mt: 1.2 }}>
+                <TablePagination
+                  component="div"
+                  count={total}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  rowsPerPage={rowsPerPage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                  rowsPerPageOptions={[10, 25, 50, 100]}
+                  labelRowsPerPage="Baris"
+                  labelDisplayedRows={({ from, to, count }) => `${from}–${to} dari ${count}`}
+                />
+              </Box>
+            </>
+          ) : (
+            <>
+              <Box sx={{ bgcolor: "#FFFFFF", border: `1px solid ${C.border}`, borderRadius: "14px 14px 0 0", overflowX: "auto" }}>
+                <Table sx={{ minWidth: 800 }}>
+                  <TableHead>
+                    <TableRow>
+                      {["Kode", "Kecamatan", "Bulan/Tahun", "Jenis Operasi", "Status", "Aksi"].map(h => (
+                        <TableCell key={h} sx={{ fontSize: 11, fontWeight: 700, color: C.textFaint, textTransform: "uppercase", letterSpacing: 0.5, borderBottom: `1px solid ${C.border}`, whiteSpace: "nowrap" }}>
+                          {h}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {list.map(item => (
+                      <TableRow key={item.id} hover>
+                        <TableCell sx={{ borderBottom: `1px solid ${C.border}`, fontSize: 13, fontFamily: "monospace" }}>{item.kode_laporan}</TableCell>
+                        <TableCell sx={{ borderBottom: `1px solid ${C.border}`, fontSize: 13 }}>{item.kecamatan_nama}</TableCell>
+                        <TableCell sx={{ borderBottom: `1px solid ${C.border}`, fontSize: 13 }}>{BULAN_NAMA[item.bulan]} {item.tahun}</TableCell>
+                        <TableCell sx={{ borderBottom: `1px solid ${C.border}`, fontSize: 13 }}>{item.jenis_operasi}</TableCell>
+                        <TableCell sx={{ borderBottom: `1px solid ${C.border}` }}>
+                          <Chip label={item.status} size="small" sx={{
+                            bgcolor: item.status === "Selesai" ? C.tealBg : C.amberBg,
+                            color: item.status === "Selesai" ? C.teal : C.amber,
+                            fontWeight: 600, fontSize: 11.5,
+                          }} />
+                        </TableCell>
+                        <TableCell sx={{ borderBottom: `1px solid ${C.border}` }}>
+                          <IconButton size="small" onClick={() => openDetail(item)} sx={{ color: C.slate, mr: 0.5 }}><FiEye size={15} /></IconButton>
+                          <IconButton size="small" onClick={() => openEdit(item)} sx={{ color: C.indigo, mr: 0.5 }}><FiEdit2 size={15} /></IconButton>
+                          <IconButton size="small" onClick={() => handleDelete(item)} sx={{ color: C.red }}><FiTrash2 size={15} /></IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                {list.length === 0 && (
+                  <Box sx={{ py: 6, textAlign: "center", color: C.textFaint, fontSize: 13.5 }}>
+                    Belum ada laporan bulanan.
+                  </Box>
+                )}
+              </Box>
+              <Box sx={{ bgcolor: "#FFFFFF", border: `1px solid ${C.border}`, borderTop: "none", borderRadius: "0 0 14px 14px" }}>
+                <TablePagination
+                  component="div"
+                  count={total}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  rowsPerPage={rowsPerPage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                  rowsPerPageOptions={[10, 25, 50, 100]}
+                  labelRowsPerPage="Baris per halaman"
+                  labelDisplayedRows={({ from, to, count }) => `${from}–${to} dari ${count}`}
+                />
+              </Box>
+            </>
+          )}
         </>
       )}
 
