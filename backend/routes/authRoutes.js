@@ -9,7 +9,7 @@ const { verifyToken } = require("../middleware/authMiddleware");
 router.post(
   "/login",
   [
-    body("email").isEmail().withMessage("Format email tidak valid."),
+    body("identifier").notEmpty().withMessage("Email atau username wajib diisi."),
     body("password").notEmpty().withMessage("Kata sandi wajib diisi."),
   ],
   login
