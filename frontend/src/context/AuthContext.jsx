@@ -14,7 +14,7 @@ export function AuthProvider({ children }) {
   async function login(email, password) {
     setLoading(true);
     try {
-      const { data } = await api.post("/auth/login", { email, password });
+      const { data } = await api.post("/auth/login", { identifier: email, password });
       localStorage.setItem("sigap_token", data.token);
       localStorage.setItem("sigap_user", JSON.stringify(data.user));
       setUser(data.user);
