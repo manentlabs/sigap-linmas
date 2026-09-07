@@ -32,6 +32,13 @@ import LanguageIcon from "@mui/icons-material/Language";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 import api from "../services/api";
+// Section "Layanan Linmas" — 4 kartu layanan publik (laporan bencana,
+// pengaduan tantribumlinmas, posyandu, pengaduan sampah) + modal formnya.
+import LayananSection from "../components/LayananSection";
+// Section "Kontak Darurat" — daftar nomor telepon penting, tap-to-call.
+import KontakDaruratSection from "../components/KontakDaruratSection";
+// Section "Kepuasan Masyarakat" — form rating bintang untuk warga.
+import KepuasanSection from "../components/KepuasanSection";
 
 // Palet disamakan dengan Sidebar.jsx / BeritaPage.jsx supaya konsisten
 const C = {
@@ -244,11 +251,22 @@ export default function HomePage() {
               Sigap Linmas
             </Typography>
             <Typography variant="body1" sx={{ mb: 4, opacity: 0.92 }}>
-              Sistem Informasi dan Manajemen Anggota Perlindungan Masyarakat
+              Sistem Informasi Pelayanan Anggota Perlindungan Masyarakat Kabupaten Bandung
             </Typography>
           </div>
         </Container>
       </Box>
+
+      {/* Section Layanan Linmas — 4 kartu: Laporan Bencana, Pengaduan
+          Tantribumlinmas, Posyandu, Pengaduan Sampah. Klik kartu membuka
+          modal form yang mengirim laporan ke POST /api/layanan-publik
+          tanpa perlu login (lihat components/LayananSection.jsx). */}
+      <LayananSection />
+
+      {/* Section Kontak Darurat — daftar nomor telepon penting (Damkar,
+          Ambulans, Polisi, Komando Linmas, BPBD) dengan tombol tap-to-call.
+          Data diambil dari GET /api/kontak-darurat (publik, tanpa login). */}
+      <KontakDaruratSection />
 
       {/* Section berita — layout list memakai grid Bootstrap */}
       <div className="container py-5 py-md-6">
@@ -322,6 +340,10 @@ export default function HomePage() {
         />
       </Box>
       </div>
+
+      {/* Section Kepuasan Masyarakat — form rating bintang, submit ke
+          POST /api/kepuasan (publik, tanpa login). */}
+      <KepuasanSection />
 
       {/* Footer */}
       <Box
