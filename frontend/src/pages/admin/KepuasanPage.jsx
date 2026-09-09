@@ -29,18 +29,20 @@ import api from "../../services/api";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
+// Warna tema light (sama persis dengan AduanPage)
 const C = {
-  panel: "#121A26",
-  panel2: "#182335",
-  border: "#243349",
-  borderSoft: "#1B2536",
-  text: "#E7ECF3",
-  textDim: "#8FA0B8",
-  textFaint: "#5A6B84",
-  amber: "#F2A93B",
-  teal: "#35C7B3",
-  red: "#EF5B5B",
-  indigo: "#6C8EFF",
+  panel: "#FFFFFF",
+  panel2: "#F8FAFC",
+  border: "#E2E8F0",
+  borderSoft: "#E5E7EB",
+  text: "#1E293B",
+  textDim: "#64748B",
+  textFaint: "#94A3B8",
+  amber: "#F59E0B",
+  teal: "#10B981",
+  red: "#EF4444",
+  indigo: "#6366F1",
+  blue: "#3B82F6",
 };
 
 export default function KepuasanPage() {
@@ -91,7 +93,7 @@ export default function KepuasanPage() {
       await api.delete(`/kepuasan/${item.id}`);
       setData((prev) => prev.filter((d) => d.id !== item.id));
       Swal.fire({ icon: "success", title: "Terhapus", timer: 1200, showConfirmButton: false, background: C.panel, color: C.text });
-      loadAll(); // refresh ringkasan supaya rata-rata ikut ter-update
+      loadAll(); // refresh ringkasan
     } catch (err) {
       Swal.fire({ icon: "error", title: "Gagal menghapus", background: C.panel, color: C.text, confirmButtonColor: C.amber });
     }
@@ -115,12 +117,22 @@ export default function KepuasanPage() {
   };
 
   return (
-    <Box>
-      <Box sx={{ mb: 2.5 }}>
-        <Typography sx={{ fontFamily: "monospace", fontSize: 11, letterSpacing: 1.5, color: C.amber, textTransform: "uppercase", mb: 0.5 }}>
+    <Box sx={{ px: { xs: 1, md: 2 }, py: 2 }}>
+      {/* Header – gaya sama seperti AduanPage */}
+      <Box sx={{ mb: 3 }}>
+        <Typography
+          sx={{
+            fontFamily: "monospace",
+            fontSize: 11,
+            letterSpacing: 1.5,
+            color: C.amber,
+            textTransform: "uppercase",
+            mb: 0.5,
+          }}
+        >
           Layanan Publik
         </Typography>
-        <Typography variant="h4" sx={{ color: C.text, fontSize: 24 }}>
+        <Typography variant="h4" sx={{ color: C.text, fontSize: 24, fontWeight: 700 }}>
           Kepuasan Masyarakat
         </Typography>
       </Box>
@@ -138,7 +150,7 @@ export default function KepuasanPage() {
       ) : (
         ringkasan && (
           <>
-            {/* Kartu ringkasan */}
+            {/* Kartu ringkasan – gunakan StatCard dengan warna light */}
             <Grid container spacing={2} sx={{ mb: 2.5 }}>
               <StatCard icon={FiUsers} label="Total Responden" value={ringkasan.total_responden} tone={C.indigo} />
               <StatCard icon={FiStar} label="Rata-rata Keseluruhan" value={fmt(ringkasan.rata_rating_keseluruhan)} tone={C.amber} suffix="/5" />
@@ -147,7 +159,17 @@ export default function KepuasanPage() {
             </Grid>
 
             {/* Grafik distribusi rating */}
-            <Card sx={{ bgcolor: C.panel, border: `1px solid ${C.border}`, borderRadius: "14px", p: 2.5, mb: 2.5 }} elevation={0}>
+            <Card
+              sx={{
+                bgcolor: C.panel,
+                border: `1px solid ${C.border}`,
+                borderRadius: "14px",
+                p: 2.5,
+                mb: 2.5,
+                boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+              }}
+              elevation={0}
+            >
               <Typography sx={{ fontWeight: 600, fontSize: 14.5, color: C.text, mb: 2 }}>
                 Distribusi Rating Keseluruhan
               </Typography>
@@ -184,14 +206,36 @@ export default function KepuasanPage() {
           {data.map((item) => (
             <Card
               key={item.id}
-              sx={{ bgcolor: C.panel, border: `1px solid ${C.border}`, borderRadius: "14px", p: 2, display: "flex", gap: 2, alignItems: "center", flexWrap: "wrap" }}
+              sx={{
+                bgcolor: C.panel,
+                border: `1px solid ${C.border}`,
+                borderRadius: "14px",
+                p: 2,
+                display: "flex",
+                gap: 2,
+                alignItems: "center",
+                flexWrap: "wrap",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+              }}
               elevation={0}
             >
               <Box sx={{ flex: 1, minWidth: 220 }}>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.4, flexWrap: "wrap" }}>
-                  <Typography sx={{ fontFamily: "monospace", fontSize: 11, color: C.textFaint }}>{item.kode_survei}</Typography>
+                  <Typography sx={{ fontFamily: "monospace", fontSize: 11, color: C.textFaint }}>
+                    {item.kode_survei}
+                  </Typography>
                   {item.jenis_layanan && (
-                    <Chip label={item.jenis_layanan} size="small" sx={{ bgcolor: C.panel2, color: C.indigo, border: `1px solid ${C.border}`, fontSize: 10.5 }} />
+                    <Chip
+                      label={item.jenis_layanan}
+                      size="small"
+                      sx={{
+                        bgcolor: C.panel2,
+                        color: C.indigo,
+                        border: `1px solid ${C.border}`,
+                        fontSize: 10.5,
+                        height: 20,
+                      }}
+                    />
                   )}
                 </Box>
                 <Typography sx={{ fontWeight: 600, fontSize: 14, color: C.text }}>
@@ -212,7 +256,11 @@ export default function KepuasanPage() {
                 emptyIcon={<StarIcon fontSize="inherit" sx={{ color: C.border }} />}
               />
 
-              <IconButton size="small" onClick={() => handleDelete(item)} sx={{ color: C.red, border: `1px solid ${C.border}`, borderRadius: "8px" }}>
+              <IconButton
+                size="small"
+                onClick={() => handleDelete(item)}
+                sx={{ color: C.red, border: `1px solid ${C.border}`, borderRadius: "8px" }}
+              >
                 <FiTrash2 size={14} />
               </IconButton>
             </Card>
@@ -231,7 +279,13 @@ export default function KepuasanPage() {
             page={page}
             count={totalPages}
             onChange={(e, val) => setPage(val)}
-            sx={{ "& .MuiPaginationItem-root": { color: C.textDim }, "& .Mui-selected": { bgcolor: `${C.amber}33 !important`, color: C.amber } }}
+            sx={{
+              "& .MuiPaginationItem-root": { color: C.textDim },
+              "& .Mui-selected": {
+                bgcolor: `${C.amber}33 !important`,
+                color: C.amber,
+              },
+            }}
           />
         </Box>
       )}
@@ -239,19 +293,43 @@ export default function KepuasanPage() {
   );
 }
 
+// Komponen kartu statistik – disesuaikan dengan gaya light
 function StatCard({ icon: Icon, label, value, tone, suffix }) {
   return (
     <Grid item xs={12} sm={6} md={3}>
-      <Card sx={{ bgcolor: C.panel, border: `1px solid ${C.border}`, borderRadius: "14px", p: 2.2 }} elevation={0}>
+      <Card
+        sx={{
+          bgcolor: C.panel,
+          border: `1px solid ${C.border}`,
+          borderRadius: "14px",
+          p: 2.2,
+          boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+        }}
+        elevation={0}
+      >
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
           <Typography sx={{ fontSize: 12.5, color: C.textDim }}>{label}</Typography>
-          <Box sx={{ width: 30, height: 30, borderRadius: "8px", bgcolor: `${tone}22`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Box
+            sx={{
+              width: 30,
+              height: 30,
+              borderRadius: "8px",
+              bgcolor: `${tone}22`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
             <Icon size={14} color={tone} />
           </Box>
         </Box>
         <Typography sx={{ fontSize: 26, fontWeight: 700, color: C.text }}>
           {value}
-          {suffix && <Typography component="span" sx={{ fontSize: 14, color: C.textFaint }}>{suffix}</Typography>}
+          {suffix && (
+            <Typography component="span" sx={{ fontSize: 14, color: C.textFaint }}>
+              {suffix}
+            </Typography>
+          )}
         </Typography>
       </Card>
     </Grid>
