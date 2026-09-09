@@ -20,6 +20,9 @@ import AduanPage from "./pages/AduanPage";
 import TitikpklPage from "./pages/TitikpklPage";
 import MonevPage from "./pages/MonevPage";
 import UserPage from "./pages/UserPage";
+import LayananPage from "./pages/admin/LayananPage";
+import KontakDaruratPage from "./pages/admin/KontakDaruratPage";
+import KepuasanPage from "./pages/admin/KepuasanPage";
 
 // Halaman default per role saat user membuka /dashboard tanpa sub-path.
 // Urutan ini mengikuti halaman pertama yang benar-benar bisa diakses
@@ -119,6 +122,29 @@ export default function App() {
                 }
               />
 
+              {/* Admin, Kepala Satgas — kelola kontak darurat & rekap kepuasan masyarakat */}
+              <Route
+                path="kontak-darurat"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={["admin", "kepala_satgas"]}
+                  >
+                    <KontakDaruratPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="kepuasan"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={["admin", "kepala_satgas"]}
+                  >
+                    <KepuasanPage />
+                  </ProtectedRoute>
+                }
+              />
+
               {/* Admin, Kepala Satgas, Non P3K */}
               <Route
                 path="absensi"
@@ -180,6 +206,24 @@ export default function App() {
                     ]}
                   >
                     <TitikpklPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Laporan warga: Bencana, Tantribumlinmas, Posyandu, Sampah —
+                  hak akses sama seperti Laporan Kegiatan / Aduan / Titik PKL */}
+              <Route
+                path="layanan"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={[
+                      "admin",
+                      "kepala_satgas",
+                      "operator_kecamatan",
+                      "non_p3k",
+                    ]}
+                  >
+                    <LayananPage />
                   </ProtectedRoute>
                 }
               />

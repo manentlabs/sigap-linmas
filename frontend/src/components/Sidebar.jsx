@@ -25,6 +25,9 @@ import {
   FiMessageSquare,
   FiAlertTriangle,
   FiHeart,
+  FiInbox,
+  FiPhoneCall,
+  FiStar,
   FiLogOut,
   FiX,
 } from "react-icons/fi";
@@ -86,9 +89,27 @@ const NAV_ITEMS = [
     roles: ["admin", "kepala_satgas", "operator_kecamatan", "non_p3k"],
   },
   {
+    path: "/dashboard/layanan",
+    label: "Pelayanan Publik",
+    icon: FiInbox,
+    roles: ["admin", "kepala_satgas", "operator_kecamatan", "non_p3k"],
+  },
+  {
     path: "/dashboard/monev",
     label: "Laporan Monev",
     icon: FiHeart,
+    roles: ["admin", "kepala_satgas"],
+  },
+  {
+    path: "/dashboard/kontak-darurat",
+    label: "Kontak Darurat",
+    icon: FiPhoneCall,
+    roles: ["admin", "kepala_satgas"],
+  },
+  {
+    path: "/dashboard/kepuasan",
+    label: "Kepuasan Masyarakat",
+    icon: FiStar,
     roles: ["admin", "kepala_satgas"],
   },
   {

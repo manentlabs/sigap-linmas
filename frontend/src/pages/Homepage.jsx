@@ -5,6 +5,7 @@ import {
   Button,
   Typography,
   Container,
+  Grid,
   Card,
   CardMedia,
   CardContent,
@@ -16,7 +17,6 @@ import {
   IconButton,
 } from "@mui/material";
 import LoginIcon from "@mui/icons-material/Login";
-import ShieldOutlinedIcon from "@mui/icons-material/ShieldOutlined";
 import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
@@ -109,11 +109,11 @@ export default function HomePage() {
   }, [page]);
 
   useEffect(() => {
-      fetchBeritaTerbaru();
+    fetchBeritaTerbaru();
   }, [fetchBeritaTerbaru]);
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: C.bg }}>
+    <Box sx={{ minHeight: "100vh", bgcolor: C.bg, overflowX: "hidden" }}>
       {/* CSS untuk navbar kaca, hero slideshow + efek kaca */}
       <style>{`
         .navbar-glass {
@@ -127,12 +127,19 @@ export default function HomePage() {
         .hero-section {
           position: relative;
           overflow: hidden;
-          min-height: 600px;
+          min-height: 560px;
           display: flex;
           align-items: center;
           justify-content: center;
           text-align: center;
-          padding: 64px 16px;
+          padding: 96px 16px 64px;
+        }
+
+        @media (max-width: 600px) {
+          .hero-section {
+            min-height: 420px;
+            padding: 88px 12px 48px;
+          }
         }
 
         .hero-slider {
@@ -164,7 +171,7 @@ export default function HomePage() {
         .hero-overlay {
           position: absolute;
           inset: 0;
-          background: linear-gradient(135deg, rgba(11,61,30,0.60) 0%, rgba(27,94,32,0.55) 100%);
+          background: linear-gradient(135deg, rgba(11,61,30,0.62) 0%, rgba(27,94,32,0.58) 100%);
           z-index: 1;
         }
 
@@ -178,6 +185,13 @@ export default function HomePage() {
           border-radius: 24px;
           padding: 40px 32px;
           box-shadow: 0 12px 40px rgba(8, 20, 45, 0.25);
+        }
+
+        @media (max-width: 600px) {
+          .hero-glass {
+            padding: 28px 20px;
+            border-radius: 18px;
+          }
         }
 
         .berita-card-bs {
@@ -198,7 +212,15 @@ export default function HomePage() {
         className="navbar-glass"
         sx={{ color: C.text, borderBottom: "none" }}
       >
-        <Toolbar sx={{ maxWidth: 1200, width: "100%", mx: "auto" }}>
+        <Toolbar
+          sx={{
+            maxWidth: 1200,
+            width: "100%",
+            mx: "auto",
+            px: { xs: 2, sm: 3 },
+            gap: 1,
+          }}
+        >
           <img
             src="/linmas.png"
             alt="Linmas"
@@ -207,9 +229,19 @@ export default function HomePage() {
               height: 40,
               marginRight: 8,
               objectFit: "contain",
+              flexShrink: 0,
             }}
           />
-          <Typography sx={{ fontWeight: 700, fontSize: 18, flexGrow: 1 }}>
+          <Typography
+            sx={{
+              fontWeight: 700,
+              fontSize: { xs: 15, sm: 18 },
+              flexGrow: 1,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
             Sigap Linmas
           </Typography>
           <Button
@@ -224,6 +256,8 @@ export default function HomePage() {
               color: C.greenMain,
               borderRadius: 2,
               bgcolor: "rgba(255,255,255,0.4)",
+              whiteSpace: "nowrap",
+              flexShrink: 0,
               "&:hover": { borderColor: C.greenMain, bgcolor: "rgba(27,94,32,0.10)" },
             }}
           >
@@ -245,13 +279,28 @@ export default function HomePage() {
         </div>
         <div className="hero-overlay" />
 
-        <Container maxWidth="sm">
+        <Container maxWidth="md">
           <div className="hero-glass">
-            <Typography variant="h3" fontWeight={700} gutterBottom>
+            <Typography
+              variant="h3"
+              fontWeight={700}
+              gutterBottom
+              sx={{ fontSize: { xs: 28, sm: 36, md: 44 } }}
+            >
               Sigap Linmas
             </Typography>
-            <Typography variant="body1" sx={{ mb: 4, opacity: 0.92 }}>
-              Sistem Informasi Pelayanan Anggota Perlindungan Masyarakat Kabupaten Bandung
+            <Typography
+              variant="body1"
+              sx={{ mb: 1, opacity: 0.95, fontWeight: 600, fontSize: { xs: 14, sm: 16 } }}
+            >
+              Sinergi Gerak Aktif Perlindungan Masyarakat
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{ opacity: 0.85, fontSize: { xs: 13, sm: 14 } }}
+            >
+              Sistem Informasi Pelayanan Anggota Perlindungan Masyarakat
+              Kabupaten Bandung
             </Typography>
           </div>
         </Container>
@@ -268,78 +317,73 @@ export default function HomePage() {
           Data diambil dari GET /api/kontak-darurat (publik, tanpa login). */}
       <KontakDaruratSection />
 
-      {/* Section berita — layout list memakai grid Bootstrap */}
-      <div className="container py-5 py-md-6">
-        <div className="text-center mb-5">
-          <div
-            style={{
+      {/* Section berita — pakai Container + Grid dari MUI supaya lebar
+          kontennya konsisten dengan section lain (sebelumnya memakai
+          class "container" Bootstrap yang breakpoint-nya berbeda dari
+          MUI Container, sehingga lebar konten "melompat" antar section). */}
+      <Container maxWidth="lg" sx={{ py: { xs: 6, md: 8 } }}>
+        <Box sx={{ textAlign: "center", mb: 5 }}>
+          <Typography
+            sx={{
               fontSize: 11,
               letterSpacing: 1.2,
               color: C.amber,
               fontWeight: 700,
               textTransform: "uppercase",
-              marginBottom: 4,
+              mb: 0.5,
             }}
           >
             Publikasi
-          </div>
-          <div style={{ fontSize: 28, fontWeight: 700, color: C.text }}>
+          </Typography>
+          <Typography sx={{ fontSize: { xs: 22, sm: 28 }, fontWeight: 700, color: C.text }}>
             Berita &amp; Kegiatan Terbaru
-          </div>
-          <div style={{ fontSize: 14, color: C.textDim, marginTop: 8 }}>
+          </Typography>
+          <Typography sx={{ fontSize: 14, color: C.textDim, mt: 1 }}>
             Informasi dan dokumentasi kegiatan anggota Perlindungan Masyarakat
-          </div>
-        </div>
+          </Typography>
+        </Box>
 
         {loading ? (
-          <div className="d-flex justify-content-center py-5">
+          <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
             <CircularProgress size={28} sx={{ color: C.amber }} />
-          </div>
+          </Box>
         ) : beritaList.length === 0 ? (
-          <div
-            className="text-center py-5 rounded-3"
-            style={{
+          <Box
+            sx={{
+              textAlign: "center",
+              py: 6,
+              borderRadius: 3,
               color: C.textFaint,
               fontSize: 14,
-              backgroundColor: C.panel,
+              bgcolor: C.panel,
               border: `1px solid ${C.border}`,
             }}
           >
             Belum ada berita yang dipublikasikan.
-          </div>
+          </Box>
         ) : (
-          <div className="row g-4">
+          <Grid container spacing={3}>
             {beritaList.map((b) => (
-              <div className="col-12 col-sm-6 col-md-4" key={b.id}>
+              <Grid item xs={12} sm={6} md={4} key={b.id}>
                 <BeritaCard berita={b} />
-              </div>
+              </Grid>
             ))}
-          </div>
+          </Grid>
         )}
 
-        <Box
-        sx={{
-          mt: 5,
-          display: "flex",
-          justifyContent: "center",
-        }}
-      >
-        <Pagination
-          page={page}
-          count={totalPages}
-          color="primary"
-          shape="rounded"
-          onChange={(e, value) => {
-            setPage(value);
-
-            window.scrollTo({
-              top: 600,
-              behavior: "smooth",
-            });
-          }}
-        />
-      </Box>
-      </div>
+        <Box sx={{ mt: 5, display: "flex", justifyContent: "center" }}>
+          <Pagination
+            page={page}
+            count={totalPages}
+            color="primary"
+            shape="rounded"
+            onChange={(e, value) => {
+              setPage(value);
+              window.scrollTo({ top: 600, behavior: "smooth" });
+            }}
+          />
+        </Box>
+      </Container>
 
       {/* Section Kepuasan Masyarakat — form rating bintang, submit ke
           POST /api/kepuasan (publik, tanpa login). */}
@@ -489,7 +533,7 @@ export default function HomePage() {
 
 function BeritaCard({ berita }) {
   return (
-    <Card elevation={0} className="berita-card-bs h-100 d-flex flex-column border">
+    <Card elevation={0} className="berita-card-bs border" sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
       {berita.gambar_url ? (
         <CardMedia
           component="img"

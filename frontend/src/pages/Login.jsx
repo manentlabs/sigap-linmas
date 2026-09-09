@@ -20,7 +20,7 @@ import { useAuth } from "../context/AuthContext";
 // --- Illustration: laptop + shield + lock + two petugas silhouettes ---
 function SigapIllustration() {
   return (
-    <svg viewBox="0 10 420 340" width="100%" height="100%" style={{ maxWidth: 420 }}>
+    <svg viewBox="0 10 420 340" width="100%" height="100%" style={{ maxWidth: 380 }}>
       <circle cx="90" cy="60" r="70" fill="#FDECC8" opacity="0.6" />
       <circle cx="360" cy="260" r="90" fill="#FCE7D6" opacity="0.5" />
 
@@ -153,20 +153,24 @@ export default function Login() {
         m: 0,
         bgcolor: "#F3F6FB",
         display: "flex",
-        flexDirection: { xs: "column", sm: "row" },
+        flexDirection: { xs: "column", md: "row" },
       }}
     >
-      {/* Panel kiri — form login (2/3 lebar layar di sm ke atas) */}
+      {/* Panel kiri — form login (2/3 lebar layar mulai breakpoint md).
+          Split 2 kolom sengaja baru mulai di md (900px), bukan sm (600px):
+          di lebar tablet-portrait, kolom ilustrasi 33% terlalu sempit dan
+          bikin form ikut kepepet. */}
       <Box
         sx={{
-          flexBasis: { xs: "100%", sm: "66.6667%" },
-          maxWidth: { xs: "100%", sm: "66.6667%" },
+          flexBasis: { xs: "100%", md: "66.6667%" },
+          maxWidth: { xs: "100%", md: "66.6667%" },
           flexGrow: 0,
           flexShrink: 0,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           p: 3,
+          py: { xs: 5, md: 3 },
         }}
       >
         <Box sx={{ width: "100%", maxWidth: 400 }}>
@@ -180,16 +184,17 @@ export default function Login() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                flexShrink: 0,
               }}
             >
               <img
                 src="/linmas.png"
                 alt="Linmas"
                 style={{
-                  width: 40,
-                  height: 40,
-                  marginRight: 8,
+                  width: 32,
+                  height: 32,
                   objectFit: "contain",
+                  display: "block",
                 }}
               />
             </Box>
@@ -306,32 +311,37 @@ export default function Login() {
         </Box>
       </Box>
 
-      {/* Panel kanan — ilustrasi (1/3 lebar layar di sm ke atas), disembunyikan di layar kecil */}
+      {/* Panel kanan — ilustrasi (1/3 lebar layar mulai md), disembunyikan
+          di bawah breakpoint md. overflowY: auto ditambahkan supaya di
+          viewport pendek kontennya bisa scroll, bukan kepotong. */}
       <Box
         sx={{
-          flexBasis: { xs: "0%", sm: "33.3333%" },
-          maxWidth: { xs: "0%", sm: "33.3333%" },
+          flexBasis: { xs: "0%", md: "33.3333%" },
+          maxWidth: { xs: "0%", md: "33.3333%" },
           flexGrow: 0,
           flexShrink: 0,
-          display: { xs: "none", sm: "flex" },
+          display: { xs: "none", md: "flex" },
           flexDirection: "column",
-          justifyContent: "flex-start",
+          justifyContent: "center",
           alignItems: "center",
-          pt: 8,
-          px: 6,
+          gap: 3,
+          py: 6,
+          px: 5,
           bgcolor: "#F8FAFC",
           borderLeft: "1px solid #E4E9F2",
+          overflowY: "auto",
         }}
       >
-        <SigapIllustration />
+        <Box sx={{ width: "100%", display: "flex", justifyContent: "center" }}>
+          <SigapIllustration />
+        </Box>
         <Typography
           sx={{
             color: "#64748B",
-            maxWidth: 380,
+            maxWidth: 340,
             fontSize: 14,
             lineHeight: 1.7,
             textAlign: "center",
-            mt: -4,
           }}
         >
           Pusat kendali pemantauan Perlindungan Masyarakat — sebaran anggota,
