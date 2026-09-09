@@ -54,8 +54,8 @@ app.use("/api/titikpkl", titikpklRoutes);
 app.use("/api/monev", monevRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/kepuasan", kepuasanRoutes);
-app.use("/api/layanan", layananRoutes);
-app.use("/api/kontakDarurat", kontakDaruratRoutes);
+app.use("/api/layanan-publik", layananRoutes);
+app.use("/api/kontak-darurat", kontakDaruratRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {
