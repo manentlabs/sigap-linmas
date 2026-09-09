@@ -18,6 +18,9 @@ const aduanRoutes = require("./backend/routes/aduanRoutes");
 const titikpklRoutes = require("./backend/routes/titikpklRoutes");
 const monevRoutes = require("./backend/routes/monevRoutes");
 const userRoutes = require("./backend/routes/userRoutes");
+const layananRoutes = require("./backend/routes/layananRoutes");
+const kepuasanRoutes = require("./backend/routes/kepuasanRoutes");
+const kontakDaruratRoutes = require("./backend/routes/kontakDaruratRoutes");
 
 const app = express();
 
@@ -50,6 +53,9 @@ app.use("/api/aduan", aduanRoutes);
 app.use("/api/titikpkl", titikpklRoutes);
 app.use("/api/monev", monevRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/kepuasan", kepuasanRoutes);
+app.use("/api/layanan", layananRoutes);
+app.use("/api/kontakDarurat", kontakDaruratRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {
