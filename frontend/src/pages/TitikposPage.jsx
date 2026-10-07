@@ -22,7 +22,6 @@ import {
   CircularProgress,
   Alert,
   Tooltip,
-  Grid,
   InputAdornment,
   FormControl,
   InputLabel,
@@ -59,13 +58,60 @@ const C = {
   teal: "#10B981",
   red: "#EF4444",
   indigo: "#6366F1",
+  pink: "#EC4899",
 };
 
-const TINGKAT_OPTIONS = ["Rendah", "Sedang", "Tinggi"];
-const STATUS_OPTIONS = ["Belum Ditindak", "Dalam Pengawasan", "Ditertibkan"];
+const JENIS_OPTIONS = ["Posyandu", "Poskamling"];
+const KONDISI_OPTIONS = ["Baik", "Cukup", "Perlu Perbaikan"];
+const STATUS_OPTIONS = ["Aktif", "Tidak Aktif"];
 const MAP_CENTER = [-7.08, 107.65]; // Sesuaikan dengan wilayah Anda
 
-export default function TitikpklPage() {
+const EMPTY_FORM = {
+  nama_lokasi: "",
+  jenis: "Posyandu",
+  kecamatan_id: "",
+  alamat: "",
+  latitude: "",
+  longitude: "",
+  peta_pos_x: "",
+  peta_pos_y: "",
+  jumlah_petugas: 0,
+  kondisi: "Baik",
+  status: "Aktif",
+  terakhir_diperiksa: "",
+  catatan: "",
+};
+
+// Label jumlah menyesuaikan jenis
+const labelJumlah = (jenis) =>
+  jenis === "Poskamling" ? "Jumlah Anggota Siskamling" : "Jumlah Kader";
+
+const getJenisColor = (jenis) => {
+  switch (jenis) {
+    case "Posyandu": return C.pink;
+    case "Poskamling": return C.indigo;
+    default: return C.textFaint;
+  }
+};
+
+const getKondisiColor = (kondisi) => {
+  switch (kondisi) {
+    case "Baik": return C.teal;
+    case "Cukup": return C.amber;
+    case "Perlu Perbaikan": return C.red;
+    default: return C.textFaint;
+  }
+};
+
+const getStatusColor = (status) => {
+  switch (status) {
+    case "Aktif": return C.teal;
+    case "Tidak Aktif": return C.textFaint;
+    default: return C.textFaint;
+  }
+};
+
+export default function TitikPosPage() {
   // Data untuk peta & tabel
   const [allData, setAllData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -78,7 +124,8 @@ export default function TitikpklPage() {
   // Filter
   const [search, setSearch] = useState("");
   const [filterKecamatan, setFilterKecamatan] = useState("");
-  const [filterTingkat, setFilterTingkat] = useState("");
+  const [filterJenis, setFilterJenis] = useState("");
+  const [filterKondisi, setFilterKondisi] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
 
   // Dropdown kecamatan
@@ -88,22 +135,10 @@ export default function TitikpklPage() {
   const [openModal, setOpenModal] = useState(false);
   const [formMode, setFormMode] = useState("create");
   const [selectedItem, setSelectedItem] = useState(null);
-  const [formData, setFormData] = useState({
-    nama_lokasi: "",
-    kecamatan_id: "",
-    latitude: "",
-    longitude: "",
-    peta_pos_x: "",
-    peta_pos_y: "",
-    jumlah_pkl: 0,
-    tingkat_kerawanan: "Sedang",
-    status_penanganan: "Belum Ditindak",
-    terakhir_diperiksa: "",
-    catatan: "",
-  });
+  const [formData, setFormData] = useState(EMPTY_FORM);
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
-  const [gpsLoading, setGpsLoading] = useState(false); // <-- GPS loading
+  const [gpsLoading, setGpsLoading] = useState(false);
 
   // Modal detail
   const [openDetail, setOpenDetail] = useState(false);
@@ -118,20 +153,21 @@ export default function TitikpklPage() {
         limit: -1,
         q: search || undefined,
         kecamatan_id: filterKecamatan || undefined,
-        tingkat_kerawanan: filterTingkat || undefined,
-        status_penanganan: filterStatus || undefined,
+        jenis: filterJenis || undefined,
+        kondisi: filterKondisi || undefined,
+        status: filterStatus || undefined,
       };
-      const { data } = await api.get("/titikpkl", { params });
+      const { data } = await api.get("/titikpos", { params });
       if (data.success) {
         setAllData(data.data);
       }
     } catch (err) {
       console.error(err);
-      setError("Gagal memuat data titik PKL");
+      setError("Gagal memuat data titik Posyandu dan Poskamling");
     } finally {
       setLoading(false);
     }
-  }, [search, filterKecamatan, filterTingkat, filterStatus]);
+  }, [search, filterKecamatan, filterJenis, filterKondisi, filterStatus]);
 
   // Fetch daftar kecamatan
   const fetchKecamatan = async () => {
@@ -154,19 +190,7 @@ export default function TitikpklPage() {
   const resetPage = () => setPage(0);
 
   const resetForm = () => {
-    setFormData({
-      nama_lokasi: "",
-      kecamatan_id: "",
-      latitude: "",
-      longitude: "",
-      peta_pos_x: "",
-      peta_pos_y: "",
-      jumlah_pkl: 0,
-      tingkat_kerawanan: "Sedang",
-      status_penanganan: "Belum Ditindak",
-      terakhir_diperiksa: "",
-      catatan: "",
-    });
+    setFormData(EMPTY_FORM);
     setFormError("");
   };
 
@@ -180,16 +204,19 @@ export default function TitikpklPage() {
   const handleOpenEdit = (item) => {
     setFormMode("edit");
     setSelectedItem(item);
+    setFormError("");
     setFormData({
       nama_lokasi: item.nama_lokasi,
+      jenis: item.jenis || "Posyandu",
       kecamatan_id: item.kecamatan_id,
+      alamat: item.alamat || "",
       latitude: item.latitude || "",
       longitude: item.longitude || "",
       peta_pos_x: item.peta_pos_x || "",
       peta_pos_y: item.peta_pos_y || "",
-      jumlah_pkl: item.jumlah_pkl || 0,
-      tingkat_kerawanan: item.tingkat_kerawanan,
-      status_penanganan: item.status_penanganan,
+      jumlah_petugas: item.jumlah_petugas || 0,
+      kondisi: item.kondisi || "Baik",
+      status: item.status || "Aktif",
       terakhir_diperiksa: item.terakhir_diperiksa
         ? item.terakhir_diperiksa.split("T")[0]
         : "",
@@ -236,25 +263,31 @@ export default function TitikpklPage() {
   };
 
   const handleSubmit = async () => {
-    if (!formData.nama_lokasi || !formData.kecamatan_id || formData.jumlah_pkl === "") {
-      setFormError("Nama lokasi, kecamatan, dan jumlah PKL wajib diisi");
+    if (
+      !formData.nama_lokasi ||
+      !formData.jenis ||
+      !formData.kecamatan_id ||
+      formData.jumlah_petugas === ""
+    ) {
+      setFormError("Nama lokasi, jenis, kecamatan, dan jumlah petugas wajib diisi");
       return;
     }
     setSaving(true);
     try {
       const payload = {
         ...formData,
+        alamat: formData.alamat || null,
         latitude: formData.latitude || null,
         longitude: formData.longitude || null,
         peta_pos_x: formData.peta_pos_x || null,
         peta_pos_y: formData.peta_pos_y || null,
-        jumlah_pkl: parseInt(formData.jumlah_pkl, 10),
+        jumlah_petugas: parseInt(formData.jumlah_petugas, 10),
         terakhir_diperiksa: formData.terakhir_diperiksa || null,
       };
       if (formMode === "create") {
-        await api.post("/titikpkl", payload);
+        await api.post("/titikpos", payload);
       } else {
-        await api.put(`/titikpkl/${selectedItem.id}`, payload);
+        await api.put(`/titikpos/${selectedItem.id}`, payload);
       }
       setOpenModal(false);
       fetchAllData();
@@ -269,37 +302,10 @@ export default function TitikpklPage() {
   const handleDelete = async (id) => {
     if (!window.confirm("Yakin ingin menghapus titik ini?")) return;
     try {
-      await api.delete(`/titikpkl/${id}`);
+      await api.delete(`/titikpos/${id}`);
       fetchAllData();
     } catch (err) {
       console.error(err);
-    }
-  };
-
-  const getTingkatColor = (tingkat) => {
-    switch (tingkat) {
-      case "Tinggi": return C.red;
-      case "Sedang": return C.amber;
-      case "Rendah": return C.teal;
-      default: return C.textFaint;
-    }
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "Belum Ditindak": return C.amber;
-      case "Dalam Pengawasan": return C.indigo;
-      case "Ditertibkan": return C.teal;
-      default: return C.textFaint;
-    }
-  };
-
-  const getMarkerColor = (tingkat) => {
-    switch (tingkat) {
-      case "Tinggi": return C.red;
-      case "Sedang": return C.amber;
-      case "Rendah": return C.teal;
-      default: return C.indigo;
     }
   };
 
@@ -308,6 +314,15 @@ export default function TitikpklPage() {
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
   );
+
+  const cardSx = {
+    bgcolor: C.panel,
+    border: `1px solid ${C.border}`,
+    borderRadius: "14px",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+  };
+
+  const headCellSx = { color: C.text, fontWeight: 600, fontSize: 14 };
 
   return (
     <Box sx={{ px: { xs: 1, md: 2 }, py: 2 }}>
@@ -327,7 +342,7 @@ export default function TitikpklPage() {
             Operasi Linmas
           </Typography>
           <Typography variant="h4" sx={{ color: C.text, fontSize: 24, fontWeight: 700 }}>
-            Titik Rawan PKL
+            Titik Posyandu & Poskamling
           </Typography>
         </Box>
         <Button
@@ -347,141 +362,104 @@ export default function TitikpklPage() {
       </Box>
 
       {/* Filter */}
-    <Card
-    sx={{
-        bgcolor: C.panel,
-        border: `1px solid ${C.border}`,
-        borderRadius: "14px",
-        p: 2.5,
-        mb: 2.5,
-        boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-    }}
-    elevation={0}
-    >
-    <Box
-        sx={{
-        display: "flex",
-        gap: 2,
-        alignItems: "center",
-        flexWrap: "wrap",
-        }}
-    >
-        <TextField
-        size="small"
-        placeholder="Cari lokasi atau catatan..."
-        value={search}
-        onChange={(e) => {
-            setSearch(e.target.value);
-            resetPage();
-        }}
-        InputProps={{
-            startAdornment: (
-            <InputAdornment position="start">
-                <FiSearch color={C.textDim} />
-            </InputAdornment>
-            ),
-        }}
-        sx={{
-            ...textFieldStyle,
-            flex: 2.5,
-            minWidth: 320,
-        }}
-        />
-
-        <FormControl
-        size="small"
-        sx={{
-            flex: 1.5,
-            minWidth: 220,
-        }}
-        >
-        <InputLabel>Kecamatan</InputLabel>
-        <Select
-            value={filterKecamatan}
-            label="Kecamatan"
+      <Card sx={{ ...cardSx, p: 2.5, mb: 2.5 }} elevation={0}>
+        <Box sx={{ display: "flex", gap: 2, alignItems: "center", flexWrap: "wrap" }}>
+          <TextField
+            size="small"
+            placeholder="Cari lokasi, alamat, atau catatan..."
+            value={search}
             onChange={(e) => {
-            setFilterKecamatan(e.target.value);
-            resetPage();
+              setSearch(e.target.value);
+              resetPage();
             }}
-            sx={selectStyle}
-        >
-            <MenuItem value="">Semua</MenuItem>
-            {kecamatanList.map((k) => (
-            <MenuItem key={k.id} value={k.id}>
-                {k.nama}
-            </MenuItem>
-            ))}
-        </Select>
-        </FormControl>
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <FiSearch color={C.textDim} />
+                </InputAdornment>
+              ),
+            }}
+            sx={{ ...textFieldStyle, flex: 2.5, minWidth: 280 }}
+          />
 
-        <FormControl
-        size="small"
-        sx={{
-            flex: 1.2,
-            minWidth: 180,
-        }}
-        >
-        <InputLabel>Tingkat</InputLabel>
-        <Select
-            value={filterTingkat}
-            label="Tingkat"
-            onChange={(e) => {
-            setFilterTingkat(e.target.value);
-            resetPage();
-            }}
-            sx={selectStyle}
-        >
-            <MenuItem value="">Semua</MenuItem>
-            {TINGKAT_OPTIONS.map((t) => (
-            <MenuItem key={t} value={t}>
-                {t}
-            </MenuItem>
-            ))}
-        </Select>
-        </FormControl>
+          <FormControl size="small" sx={{ flex: 1.5, minWidth: 200 }}>
+            <InputLabel>Kecamatan</InputLabel>
+            <Select
+              value={filterKecamatan}
+              label="Kecamatan"
+              onChange={(e) => {
+                setFilterKecamatan(e.target.value);
+                resetPage();
+              }}
+              sx={selectStyle}
+            >
+              <MenuItem value="">Semua</MenuItem>
+              {kecamatanList.map((k) => (
+                <MenuItem key={k.id} value={k.id}>{k.nama}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-        <FormControl
-        size="small"
-        sx={{
-            flex: 1.2,
-            minWidth: 180,
-        }}
-        >
-        <InputLabel>Status</InputLabel>
-        <Select
-            value={filterStatus}
-            label="Status"
-            onChange={(e) => {
-            setFilterStatus(e.target.value);
-            resetPage();
-            }}
-            sx={selectStyle}
-        >
-            <MenuItem value="">Semua</MenuItem>
-            {STATUS_OPTIONS.map((s) => (
-            <MenuItem key={s} value={s}>
-                {s}
-            </MenuItem>
-            ))}
-        </Select>
-        </FormControl>
-    </Box>
-    </Card>
+          <FormControl size="small" sx={{ flex: 1.2, minWidth: 160 }}>
+            <InputLabel>Jenis</InputLabel>
+            <Select
+              value={filterJenis}
+              label="Jenis"
+              onChange={(e) => {
+                setFilterJenis(e.target.value);
+                resetPage();
+              }}
+              sx={selectStyle}
+            >
+              <MenuItem value="">Semua</MenuItem>
+              {JENIS_OPTIONS.map((j) => (
+                <MenuItem key={j} value={j}>{j}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl size="small" sx={{ flex: 1.2, minWidth: 170 }}>
+            <InputLabel>Kondisi</InputLabel>
+            <Select
+              value={filterKondisi}
+              label="Kondisi"
+              onChange={(e) => {
+                setFilterKondisi(e.target.value);
+                resetPage();
+              }}
+              sx={selectStyle}
+            >
+              <MenuItem value="">Semua</MenuItem>
+              {KONDISI_OPTIONS.map((k) => (
+                <MenuItem key={k} value={k}>{k}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl size="small" sx={{ flex: 1.2, minWidth: 150 }}>
+            <InputLabel>Status</InputLabel>
+            <Select
+              value={filterStatus}
+              label="Status"
+              onChange={(e) => {
+                setFilterStatus(e.target.value);
+                resetPage();
+              }}
+              sx={selectStyle}
+            >
+              <MenuItem value="">Semua</MenuItem>
+              {STATUS_OPTIONS.map((s) => (
+                <MenuItem key={s} value={s}>{s}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+      </Card>
 
       {/* PETA */}
-      <Card
-        sx={{
-          bgcolor: C.panel,
-          border: `1px solid ${C.border}`,
-          borderRadius: "14px",
-          p: 2.5,
-          mb: 2.5,
-          boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-        }}
-        elevation={0}
-      >
+      <Card sx={{ ...cardSx, p: 2.5, mb: 2.5 }} elevation={0}>
         <Typography sx={{ fontWeight: 600, fontSize: 15, color: C.text, mb: 2 }}>
-          Peta Sebaran Titik PKL
+          Peta Sebaran Posyandu & Poskamling
         </Typography>
         <Box
           sx={{
@@ -509,47 +487,42 @@ export default function TitikpklPage() {
               />
               {allData
                 .filter((item) => item.latitude && item.longitude)
-                .map((item) => (
-                  <Marker
-                    key={item.id}
-                    position={[parseFloat(item.latitude), parseFloat(item.longitude)]}
-                    icon={L.divIcon({
-                      className: "",
-                      html: `<div style="background:${getMarkerColor(item.tingkat_kerawanan)}; width:14px; height:14px; border-radius:50%; border:2px solid white; box-shadow:0 0 4px rgba(0,0,0,0.3);"></div>`,
-                      iconSize: [14, 14],
-                      iconAnchor: [7, 7],
-                    })}
-                  >
-                    <Popup>
-                      <strong>{item.nama_lokasi}</strong><br />
-                      Kec. {item.kecamatan_nama}<br />
-                      Jumlah PKL: {item.jumlah_pkl}<br />
-                      Tingkat: {item.tingkat_kerawanan}<br />
-                      Status: {item.status_penanganan}
-                    </Popup>
-                  </Marker>
-                ))}
+                .map((item) => {
+                  // Posyandu = lingkaran, Poskamling = persegi
+                  const radius = item.jenis === "Poskamling" ? "3px" : "50%";
+                  return (
+                    <Marker
+                      key={item.id}
+                      position={[parseFloat(item.latitude), parseFloat(item.longitude)]}
+                      icon={L.divIcon({
+                        className: "",
+                        html: `<div style="background:${getJenisColor(item.jenis)}; width:16px; height:16px; border-radius:${radius}; border:2px solid white; box-shadow:0 0 4px rgba(0,0,0,0.3);"></div>`,
+                        iconSize: [16, 16],
+                        iconAnchor: [8, 8],
+                      })}
+                    >
+                      <Popup>
+                        <strong>{item.nama_lokasi}</strong><br />
+                        {item.jenis}<br />
+                        Kec. {item.kecamatan_nama}<br />
+                        {labelJumlah(item.jenis)}: {item.jumlah_petugas}<br />
+                        Kondisi: {item.kondisi}<br />
+                        Status: {item.status}
+                      </Popup>
+                    </Marker>
+                  );
+                })}
             </MapContainer>
           )}
         </Box>
         <Box sx={{ display: "flex", gap: 2, mt: 1.5, fontSize: 12, color: C.textDim }}>
-          <LegendDot color={C.red} label="Tinggi" />
-          <LegendDot color={C.amber} label="Sedang" />
-          <LegendDot color={C.teal} label="Rendah" />
+          <LegendDot color={C.pink} label="Posyandu" shape="circle" />
+          <LegendDot color={C.indigo} label="Poskamling" shape="square" />
         </Box>
       </Card>
 
       {/* TABEL */}
-      <Card
-        sx={{
-          bgcolor: C.panel,
-          border: `1px solid ${C.border}`,
-          borderRadius: "14px",
-          overflow: "hidden",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-        }}
-        elevation={0}
-      >
+      <Card sx={{ ...cardSx, overflow: "hidden" }} elevation={0}>
         {loading ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
             <CircularProgress sx={{ color: C.amber }} />
@@ -557,34 +530,49 @@ export default function TitikpklPage() {
         ) : error ? (
           <Alert severity="error" sx={{ m: 2 }}>{error}</Alert>
         ) : allData.length === 0 ? (
-          <Box sx={{ py: 6, textAlign: "center", color: C.textDim }}>Belum ada data titik PKL</Box>
+          <Box sx={{ py: 6, textAlign: "center", color: C.textDim }}>
+            Belum ada data titik Posyandu atau Poskamling
+          </Box>
         ) : (
           <>
             <TableContainer>
               <Table>
                 <TableHead sx={{ bgcolor: C.panel2 }}>
                   <TableRow>
-                    <TableCell sx={{ color: C.text, fontWeight: 600, fontSize: 14 }}>Nama Lokasi</TableCell>
-                    <TableCell sx={{ color: C.text, fontWeight: 600, fontSize: 14 }}>Kecamatan</TableCell>
-                    <TableCell sx={{ color: C.text, fontWeight: 600, fontSize: 14 }}>Jumlah PKL</TableCell>
-                    <TableCell sx={{ color: C.text, fontWeight: 600, fontSize: 14 }}>Tingkat</TableCell>
-                    <TableCell sx={{ color: C.text, fontWeight: 600, fontSize: 14 }}>Status</TableCell>
-                    <TableCell align="center" sx={{ color: C.text, fontWeight: 600, fontSize: 14 }}>Aksi</TableCell>
+                    <TableCell sx={headCellSx}>Nama Lokasi</TableCell>
+                    <TableCell sx={headCellSx}>Jenis</TableCell>
+                    <TableCell sx={headCellSx}>Kecamatan</TableCell>
+                    <TableCell sx={headCellSx}>Petugas</TableCell>
+                    <TableCell sx={headCellSx}>Kondisi</TableCell>
+                    <TableCell sx={headCellSx}>Status</TableCell>
+                    <TableCell align="center" sx={headCellSx}>Aksi</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {paginatedData.map((item) => (
                     <TableRow key={item.id} hover>
                       <TableCell sx={{ color: C.text, fontSize: 14 }}>{item.nama_lokasi}</TableCell>
-                      <TableCell sx={{ color: C.textDim, fontSize: 13 }}>{item.kecamatan_nama}</TableCell>
-                      <TableCell sx={{ color: C.textDim, fontSize: 13 }}>{item.jumlah_pkl}</TableCell>
                       <TableCell>
                         <Chip
-                          label={item.tingkat_kerawanan}
+                          label={item.jenis}
                           size="small"
                           sx={{
-                            bgcolor: `${getTingkatColor(item.tingkat_kerawanan)}20`,
-                            color: getTingkatColor(item.tingkat_kerawanan),
+                            bgcolor: `${getJenisColor(item.jenis)}20`,
+                            color: getJenisColor(item.jenis),
+                            fontWeight: 500,
+                            fontSize: 12,
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell sx={{ color: C.textDim, fontSize: 13 }}>{item.kecamatan_nama}</TableCell>
+                      <TableCell sx={{ color: C.textDim, fontSize: 13 }}>{item.jumlah_petugas}</TableCell>
+                      <TableCell>
+                        <Chip
+                          label={item.kondisi}
+                          size="small"
+                          sx={{
+                            bgcolor: `${getKondisiColor(item.kondisi)}20`,
+                            color: getKondisiColor(item.kondisi),
                             fontWeight: 500,
                             fontSize: 12,
                           }}
@@ -592,11 +580,11 @@ export default function TitikpklPage() {
                       </TableCell>
                       <TableCell>
                         <Chip
-                          label={item.status_penanganan}
+                          label={item.status}
                           size="small"
                           sx={{
-                            bgcolor: `${getStatusColor(item.status_penanganan)}20`,
-                            color: getStatusColor(item.status_penanganan),
+                            bgcolor: `${getStatusColor(item.status)}20`,
+                            color: getStatusColor(item.status),
                             fontWeight: 500,
                             fontSize: 12,
                           }}
@@ -643,7 +631,7 @@ export default function TitikpklPage() {
         )}
       </Card>
 
-      {/* Modal Form (Tambah/Edit) - DENGAN TOMBOL GPS */}
+      {/* Modal Form (Tambah/Edit) */}
       <Dialog
         open={openModal}
         onClose={() => setOpenModal(false)}
@@ -652,15 +640,29 @@ export default function TitikpklPage() {
         PaperProps={{ sx: { bgcolor: C.panel, borderRadius: "14px", color: C.text } }}
       >
         <DialogTitle sx={{ fontWeight: 600, fontSize: 18 }}>
-          {formMode === "create" ? "Tambah Titik PKL" : "Edit Titik PKL"}
+          {formMode === "create" ? "Tambah Titik" : "Edit Titik"}
         </DialogTitle>
         <DialogContent>
           <Box sx={{ mt: 1, display: "flex", flexDirection: "column", gap: 2 }}>
+            <FormControl fullWidth required size="small">
+              <InputLabel>Jenis</InputLabel>
+              <Select
+                value={formData.jenis}
+                label="Jenis"
+                onChange={(e) => setFormData({ ...formData, jenis: e.target.value })}
+                sx={selectStyle}
+              >
+                {JENIS_OPTIONS.map((j) => (
+                  <MenuItem key={j} value={j}>{j}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
             <TextField
-              label="Nama Lokasi"
+              label={`Nama ${formData.jenis}`}
               value={formData.nama_lokasi}
               onChange={(e) => setFormData({ ...formData, nama_lokasi: e.target.value })}
-              fullWidth required
+              fullWidth
+              required
               sx={textFieldStyle}
             />
             <FormControl fullWidth required>
@@ -677,11 +679,19 @@ export default function TitikpklPage() {
               </Select>
             </FormControl>
             <TextField
-              label="Jumlah PKL"
+              label="Alamat"
+              value={formData.alamat}
+              onChange={(e) => setFormData({ ...formData, alamat: e.target.value })}
+              fullWidth
+              sx={textFieldStyle}
+            />
+            <TextField
+              label={labelJumlah(formData.jenis)}
               type="number"
-              value={formData.jumlah_pkl}
-              onChange={(e) => setFormData({ ...formData, jumlah_pkl: e.target.value })}
-              fullWidth required
+              value={formData.jumlah_petugas}
+              onChange={(e) => setFormData({ ...formData, jumlah_petugas: e.target.value })}
+              fullWidth
+              required
               sx={textFieldStyle}
             />
 
@@ -735,28 +745,24 @@ export default function TitikpklPage() {
               sx={textFieldStyle}
             />
             <FormControl fullWidth>
-              <InputLabel>Tingkat Kerawanan</InputLabel>
+              <InputLabel>Kondisi</InputLabel>
               <Select
-                value={formData.tingkat_kerawanan}
-                label="Tingkat Kerawanan"
-                onChange={(e) =>
-                  setFormData({ ...formData, tingkat_kerawanan: e.target.value })
-                }
+                value={formData.kondisi}
+                label="Kondisi"
+                onChange={(e) => setFormData({ ...formData, kondisi: e.target.value })}
                 sx={selectStyle}
               >
-                {TINGKAT_OPTIONS.map((t) => (
-                  <MenuItem key={t} value={t}>{t}</MenuItem>
+                {KONDISI_OPTIONS.map((k) => (
+                  <MenuItem key={k} value={k}>{k}</MenuItem>
                 ))}
               </Select>
             </FormControl>
             <FormControl fullWidth>
-              <InputLabel>Status Penanganan</InputLabel>
+              <InputLabel>Status</InputLabel>
               <Select
-                value={formData.status_penanganan}
-                label="Status Penanganan"
-                onChange={(e) =>
-                  setFormData({ ...formData, status_penanganan: e.target.value })
-                }
+                value={formData.status}
+                label="Status"
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                 sx={selectStyle}
               >
                 {STATUS_OPTIONS.map((s) => (
@@ -768,9 +774,7 @@ export default function TitikpklPage() {
               label="Terakhir Diperiksa"
               type="date"
               value={formData.terakhir_diperiksa}
-              onChange={(e) =>
-                setFormData({ ...formData, terakhir_diperiksa: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, terakhir_diperiksa: e.target.value })}
               InputLabelProps={{ shrink: true }}
               fullWidth
               sx={textFieldStyle}
@@ -820,10 +824,17 @@ export default function TitikpklPage() {
             <DialogTitle sx={{ fontWeight: 600 }}>{detailItem.nama_lokasi}</DialogTitle>
             <DialogContent>
               <Typography variant="body2" color={C.textDim}>
+                Jenis: {detailItem.jenis}<br />
                 Kecamatan: {detailItem.kecamatan_nama}<br />
-                Jumlah PKL: {detailItem.jumlah_pkl}<br />
-                Tingkat: {detailItem.tingkat_kerawanan}<br />
-                Status: {detailItem.status_penanganan}<br />
+                {detailItem.alamat && (
+                  <>
+                    Alamat: {detailItem.alamat}
+                    <br />
+                  </>
+                )}
+                {labelJumlah(detailItem.jenis)}: {detailItem.jumlah_petugas}<br />
+                Kondisi: {detailItem.kondisi}<br />
+                Status: {detailItem.status}<br />
                 {detailItem.latitude && (
                   <>
                     Lat: {detailItem.latitude} &nbsp; Lng: {detailItem.longitude}
@@ -867,10 +878,17 @@ export default function TitikpklPage() {
   );
 }
 
-function LegendDot({ color, label }) {
+function LegendDot({ color, label, shape = "circle" }) {
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 0.7 }}>
-      <Box sx={{ width: 9, height: 9, borderRadius: "50%", bgcolor: color }} />
+      <Box
+        sx={{
+          width: 10,
+          height: 10,
+          borderRadius: shape === "circle" ? "50%" : "2px",
+          bgcolor: color,
+        }}
+      />
       <Typography sx={{ fontSize: 12, color: C.textDim }}>{label}</Typography>
     </Box>
   );
@@ -887,12 +905,11 @@ const textFieldStyle = {
   "& .MuiInputBase-input": { color: C.text, fontSize: 14 },
 };
 
+// Diterapkan langsung ke <Select>, jadi root-nya sudah OutlinedInput
 const selectStyle = {
-  "& .MuiOutlinedInput-root": {
-    bgcolor: C.panel2,
-    borderRadius: "10px",
-    "& fieldset": { borderColor: C.border },
-  },
-  "& .MuiInputLabel-root": { color: C.textDim },
+  bgcolor: C.panel2,
+  borderRadius: "10px",
+  "& fieldset": { borderColor: C.border },
+  "&:hover fieldset": { borderColor: C.textFaint },
   "& .MuiSelect-select": { color: C.text, fontSize: 14 },
 };

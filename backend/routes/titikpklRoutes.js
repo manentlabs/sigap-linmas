@@ -1,16 +1,16 @@
 const router = require("express").Router();
 const {
-  getAllTitikPkl,
-  getTitikPklById,
-  createTitikPkl,
-  updateTitikPkl,
-  deleteTitikPkl,
-} = require("../controllers/titikpklController");
+  getAllTitikPos,
+  getTitikPosById,
+  createTitikPos,
+  updateTitikPos,
+  deleteTitikPos,
+} = require("../controllers/titikposController");
 
-router.get("/", getAllTitikPkl);
-router.get("/:id", getTitikPklById);
-router.post("/", createTitikPkl);
-router.put("/:id", updateTitikPkl);
-router.delete("/:id", deleteTitikPkl);
+router.get("/", getAllTitikPos);
+router.get("/:id", getTitikPosById);
+router.post("/", createTitikPos);
+router.put("/:id", updateTitikPos);
+router.delete("/:id", deleteTitikPos);
 
 module.exports = router;

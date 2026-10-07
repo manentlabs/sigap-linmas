@@ -84,7 +84,7 @@ const NAV_ITEMS = [
   },
   {
     path: "/dashboard/titikpkl",
-    label: "Peta Rawan PKL",
+    label: "Peta Titik Lokasi",
     icon: FiAlertTriangle,
     roles: ["admin", "kepala_satgas", "operator_kecamatan", "non_p3k"],
   },

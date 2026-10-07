@@ -17,7 +17,7 @@ import AbsensiPage from "./pages/AbsensiPage";
 import LaporanPage from "./pages/LaporanPage";
 import SebaranPage from "./pages/SebaranPage";
 import AduanPage from "./pages/AduanPage";
-import TitikpklPage from "./pages/TitikpklPage";
+import TitikPosPage from "./pages/TitikposPage";
 import MonevPage from "./pages/MonevPage";
 import UserPage from "./pages/UserPage";
 import LayananPage from "./pages/admin/LayananPage";
@@ -195,7 +195,7 @@ export default function App() {
               />
 
               <Route
-                path="titikpkl"
+                path="titikpos"
                 element={
                   <ProtectedRoute
                     allowedRoles={[
@@ -205,7 +205,7 @@ export default function App() {
                       "non_p3k",
                     ]}
                   >
-                    <TitikpklPage />
+                    <TitikPosPage />
                   </ProtectedRoute>
                 }
               />
