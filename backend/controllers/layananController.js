@@ -1,5 +1,7 @@
 // backend/controllers/layananController.js
 const sequelize = require("../config/database");
+const fs = require("fs");
+const path = require("path");
 
 const JENIS_VALID = [
   "Laporan Bencana",
@@ -159,7 +161,7 @@ async function deleteLayanan(req, res) {
     const { id } = req.params;
 
     const [existing] = await sequelize.query(
-      "SELECT id FROM layanan_publik WHERE id = ?",
+      "SELECT id, foto_url FROM layanan_publik WHERE id = ?",
       { replacements: [id] }
     );
     if (existing.length === 0) {
@@ -169,6 +171,24 @@ async function deleteLayanan(req, res) {
     await sequelize.query("DELETE FROM layanan_publik WHERE id = ?", {
       replacements: [id],
     });
+
+    // Hapus file foto bila ada (gagal hapus file tidak menggagalkan respons)
+    const fotoUrl = existing[0].foto_url;
+    if (fotoUrl) {
+      const filePath = path.join(
+        __dirname,
+        "..",
+        "public",
+        "uploads",
+        "layanan",
+        path.basename(fotoUrl)
+      );
+      fs.unlink(filePath, (err) => {
+        if (err && err.code !== "ENOENT") {
+          console.warn("Gagal menghapus foto layanan:", err.message);
+        }
+      });
+    }
 
     res.json({ success: true, message: "Laporan berhasil dihapus" });
   } catch (err) {
