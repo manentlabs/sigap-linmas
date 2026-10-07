@@ -8,6 +8,7 @@ const {
   getAllLayanan,
   getLayananById,
   updateStatusLayanan,
+  deleteLayanan
 } = require("../controllers/layananController");
 
 const { upload } = require("../middleware/uploadLayanan");
