@@ -85,4 +85,12 @@ router.patch(
   updateStatusLayanan
 );
 
+router.delete(
+  "/:id",
+  authorizeRoles("admin", "kepala_satgas"),
+  [param("id").isInt().withMessage("id harus berupa angka.")],
+  cekValidasi,
+  deleteLayanan
+);
+
 module.exports = router;

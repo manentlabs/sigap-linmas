@@ -154,9 +154,33 @@ async function updateStatusLayanan(req, res) {
   }
 }
 
+async function deleteLayanan(req, res) {
+  try {
+    const { id } = req.params;
+
+    const [existing] = await sequelize.query(
+      "SELECT id FROM layanan_publik WHERE id = ?",
+      { replacements: [id] }
+    );
+    if (existing.length === 0) {
+      return res.status(404).json({ success: false, message: "Laporan tidak ditemukan" });
+    }
+
+    await sequelize.query("DELETE FROM layanan_publik WHERE id = ?", {
+      replacements: [id],
+    });
+
+    res.json({ success: true, message: "Laporan berhasil dihapus" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Gagal menghapus laporan" });
+  }
+}
+
 module.exports = {
   createLayanan,
   getAllLayanan,
   getLayananById,
   updateStatusLayanan,
+  deleteLayanan,
 };
