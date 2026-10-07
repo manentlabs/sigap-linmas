@@ -83,7 +83,7 @@ const NAV_ITEMS = [
     roles: ["admin", "kepala_satgas", "operator_kecamatan", "non_p3k"],
   },
   {
-    path: "/dashboard/titikpkl",
+    path: "/dashboard/titikpos",
     label: "Peta Titik Lokasi",
     icon: FiAlertTriangle,
     roles: ["admin", "kepala_satgas", "operator_kecamatan", "non_p3k"],
