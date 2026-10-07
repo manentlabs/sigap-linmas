@@ -50,7 +50,7 @@ app.use("/api/absensi", absensiRoutes);
 app.use("/api/laporan", laporanRoutes);
 app.use("/api/sebaran", sebaranRoutes);
 app.use("/api/aduan", aduanRoutes);
-app.use("/api/titikpkl", titikpklRoutes);
+app.use("/api/titikpos", titikposRoutes);
 app.use("/api/monev", monevRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/kepuasan", kepuasanRoutes);
